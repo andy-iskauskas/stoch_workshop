@@ -169,7 +169,15 @@ Boxes like these contain material that is specific to the calibration of stochas
 
 ```
 
-When calibrating a stochastic model, in many applications the primary interest consists in identifying all parameter sets for which the mean of the model closely matches the observed data. An epidemiological example of this situation is when individual-based models are used (e.g. to account for household structure and transmission between household members), even though the aim is to study the average model output across multiple runs and there is no interest in the stochasticity of the model in itself. In other applications, the interest is instead in examining the properties and behaviour of all possible trajectories of the model, and in finding the parameter sets that can produce trajectories matching the observed data. In epidemiology, this is for example the case when we are dealing with small populations and we are directly interested in the stochasticity of the model (e.g. if we want to answer the following question: after an infected individual is inserted in a population, does transmission take off or die out?). In this workshop we focus on the former case and develop an emulator structure that helps us match to the mean of the model. This allows us to rule out large portions of the input parameter space, and it can be very useful even in the case in which one is interested in single trajectories of the model. An implementation of history matching with emulation dealing with single realisations of stochastic models will appear in future versions of our package.   
+There are two reasons why epidemiologists may choose to use a stochastic model structure. The first is when modelling small numbers (e.g. a small population size, or small numbers of cases), where we are interested in the results of individual runs (e.g. to answer the question of what is the probability of an outbreak taking off following the introduction of an infection?). In this first case, we may wish to find input parameter sets where any individual model run is consistent with the calibration targets.
+
+The second is when some characteristic that we wish to include in a model requires the use of an individual-based model, which are necessarily stochastic (e.g. if we wish to accurately capture patterns of repeated contact within and outside households). In this second case, we are not interested in the variation between individual runs at the same input parameter set, only in the mean result when averaged over large numbers of model runs. We therefore want to find input parameter sets where the mean outputs are consistent with the calibration targets.
+
+<!-- When calibrating a stochastic model, in many applications the primary interest consists in identifying all parameter sets for which the mean of the model closely matches the observed data. An epidemiological example of this situation is when individual-based models are used (e.g. to account for household structure and transmission between household members), even though the aim is to study the average model output across multiple runs and there is no interest in the stochasticity of the model in itself. In other applications, the interest is instead in examining the properties and behaviour of all possible trajectories of the model, and in finding the parameter sets that can produce trajectories matching the observed data. In epidemiology, this is for example the case when we are dealing with small populations and we are directly interested in the stochasticity of the model (e.g. if we want to answer the following question: after an infected individual is inserted in a population, does transmission take off or die out?). In this workshop we focus on the former case and develop an emulator structure that helps us match to the mean of the model. This allows us to rule out large portions of the input parameter space, and it can be very useful even in the case in which one is interested in single trajectories of the model. An implementation of history matching with emulation dealing with single realisations of stochastic models will appear in future versions of our package.    -->
+
+In this workshop we focus on the second case, and develop an emulator structure that helps us match to the mean of the model. This allows us to rule out large portions of the input parameter space, and it can be very useful even in the case in which one is interested in single runs of the model. An implementation of history matching with emulation dealing with single runs of stochastic models will appear in future versions of our package. 
+
+Note that when running the workshop code on your device, you should not expect the hmer visualisation tools to produce the same exact output as the one you can find in the following sections. This is mainly because the maximinLHS function, that you will use to define the initial parameter sets on which emulators are trained, does return different Latin Hypercube designs at each call. 
 
 Before starting the tutorial, you will need to run the code contained in the box below: it will load all relevant dependencies and a few helper functions which will be introduced and used later.   
 
@@ -294,7 +302,9 @@ get_results <- function(params, nreps = 100, outs, times, raw = FALSE) {
 
 # An overview of history matching with emulation and hmer
 
-In this section we briefly recap the history matching with emulation workflow and we explain how various steps of the process can be performed using hmer functions.
+ A video presentation of this section can be found [here](https://youtu.be/xSQYRmkiVgc).
+
+In this section we briefly recap the history matching with emulation workflow and we explain how various steps of the process can be performed using hmer functions.  For a more detailed introduction to history matching with emulation  in the case of stochastic models you can check [Ian Vernon's presentation](https://youtu.be/OnCK8So3mwc).
 
 ``` {r, echo = FALSE, fig.cap='History matching with emulation workflow'}
 knitr::include_graphics('hme_flowchart_cut.png')
@@ -321,7 +331,11 @@ The last column of the table indicates what section of this workshop deals with 
 ```
 
 # Introduction to the model {#intro}
-In this section we introduce the model that we will work with throughout our workshop. To facilitate the comparison between the deterministic and the stochastic setting, we will work with the <span class="abbr" title="A model consisting of four compartments 
+ A video presentation of this section can be found [here](https://youtu.be/WZGEcvd2jW0).
+
+In this section we introduce the model that we will work with throughout our workshop. 
+
+To facilitate the comparison between the deterministic and the stochastic setting, we will work with the <span class="abbr" title="A model consisting of four compartments 
 
 - $S$: Susceptible individuals,
 - $E$: Exposed individuals (i.e. people that are infected but not infectious yet), 
@@ -560,7 +574,12 @@ This causes the peak of recovered individuals to slightly decrease.
 
 
 # 'wave0' - parameter ranges, targets and design points
-In this section we set up the emulation task, defining the input parameter ranges, the calibration targets and all the data necessary to build the first wave of emulators. Note that, for the sake of clarity, in this workshop we will adopt the word 'data' only when referring to the set of runs of the model that are used to train emulators. Empirical observations, that would inform our choice of targets if we were modelling a real-world scenario, will instead be referred to as 'observations'.
+
+A video presentation of this section can be found [here](https://youtu.be/3a2FVEb7xNc).
+
+In this section we set up the emulation task, defining the input parameter ranges, the calibration targets and all the data necessary to build the first wave of emulators. 
+
+Note that, for the sake of clarity, in this workshop we will adopt the word 'data' only when referring to the set of runs of the model that are used to train emulators. Empirical observations, that would inform our choice of targets if we were modelling a real-world scenario, will instead be referred to as 'observations'.
 
 First of all, let us set the parameter ranges:
   
@@ -639,7 +658,9 @@ output_names <- c("I25", "I40", "I100", "I200", "R25", "R40", "R100", "R200")
 
 # Emulators 
 
-In this section we will train stochastic emulators, which take into account the fact that each time the model is run using the same parameter set, it will generate different output.
+A video presentation of this section can be found [here](https://youtu.be/G_Zf5Zw0Ivc).
+
+In this section we will train stochastic emulators, which take into account the fact that each time the model is run using the same parameter set, it will generate different output. 
 
 ## Brief recap on the structure of an emulator
 
@@ -673,13 +694,14 @@ In the deterministic workshop, we said that in order to train an emulator, the `
 ## Stochastic emulators
 
 ```{info, title = NA, collapsible = FALSE}
-To train stochastic emulators we use the function `variance_emulator_from_data`, which requires the training data, the names of the outputs to emulate, and the ranges of the parameters:
+To train stochastic emulators we use the function `emulator_from_data` specifying `emulator_type = 'variance'`, which requires the training data, the names of the outputs to emulate, and the ranges of the parameters:
 
 ``{r, fig.height=7, fig.width=7}
-stoch_emulators <- variance_emulator_from_data(all_training, output_names, ranges)
+stoch_emulators <- emulator_from_data(all_training, output_names, ranges, 
+                                      emulator_type = 'variance')
 ``
 
-The function `variance_emulator_from_data` returns two sets of emulators: one for the variance and one for the expectation of each model output. Behind the scenes, `variance_emulator_from_data` does the following:
+The function `emulator_from_data` with `emulator_type = 'variance'` returns two sets of emulators: one for the variance and one for the expectation of each model output. Behind the scenes, `emulator_from_data` does the following:
 
 - First, it estimates the variance of each model output of interest at each provided parameter set: this is possible since `all_training` contains several model runs at each parameter set. 
 
@@ -717,8 +739,11 @@ We see that the black point in the dark blue area, corresponding to the first po
  
 
 # Implausibility 
+A video presentation of this section can be found [here](https://youtu.be/qTaFv6lyj7U).
 
-We will first briefly review the definition of an implausibility measure. For a given stochastic model output and a given target, the implausibility measures the difference between the output and the target, taking into account all sources of uncertainty. For a parameter set $x$, a particular choice of implausibility, useful for either matching to the mean of the stochastic model, or its spread of possible values, is:
+We will first briefly review the definition of an implausibility measure. 
+
+For a given stochastic model output and a given target, the implausibility measures the difference between the output and the target, taking into account all sources of uncertainty. For a parameter set $x$, a particular choice of implausibility, useful for either matching to the mean of the stochastic model, or its spread of possible values, is:
 
 $$\text{Imp}(x) = \frac{|\text{E}[m(x)]-z|}{\sqrt{V_0 + V_c(x)+V_s(x)+V_m}},$$
 
@@ -757,7 +782,9 @@ The plot shows what we expected: when $\epsilon$ and $\alpha$ are equal to their
 
 # Emulator diagnostics
 
-The function `validation_diagnostics` can be used as in the deterministic case, to get three diagnostics for each emulated output.
+A video presentation of this section can be found [here](https://youtu.be/UcWIzhdMF3Y).
+
+The function `validation_diagnostics` can be used as in the deterministic case, to get three diagnostics for each emulated output. 
 
 ```{info, title="Remind me of what each diagnostics means"}
 **The first column** shows the emulator outputs plotted against the model outputs. In particular, the emulator expectation is plotted against the model output for each validation point, providing the dots in the graph. The emulator uncertainty at each validation point is shown in the form of a vertical interval that goes from $3\sigma$ below to $3\sigma$ above the emulator expectation, where $\sigma$ is the emulator variance at the considered point.  An 'ideal' emulator would exactly reproduce the model results: this behaviour is represented by the green line $f(x)=E[f(x)]$ (this is a diagonal line, visible here only in the bottom left and top right corners). Any parameter set whose emulator prediction lies more than $3\sigma$ away from the model output is highlighted in red. Note that we do not need to have no red points for the test to be passed: since we are plotting $3\sigma$ bounds, statistically speaking it is ok to have up to $5\%$ of validation points in red (see [Pukelsheim's $3\sigma$ rule](https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule)).
@@ -776,20 +803,59 @@ Finally, **the third column** gives the standardised errors of the emulator outp
 - Is the histogram skewing significantly in one direction or the other? If this is the case, the emulator tends to either overestimate or underestimate the model output.
 ``` 
 
+We call `validation_diagnostics` passing it the mean emulators, the list of targets, the validation set:
+
 ```{r,  fig.height=6, fig.width=8}
 vd <- validation_diagnostics(stoch_emulators$expectation, targets, all_valid, plt=TRUE, row=2)
 ```
 
-Note that by default `validation_diagnostics` groups the outputs in sets of three. Since here we have 8 outputs, we set the argument `row` to 2: this is not strictly necessary but improves the format of the grid of plots obtained. As in deterministic case, we can enlarge the $\sigma$ values of the mean emulators to obtain more conservative emulators, if needed. Based on the diagnostics above, all emulators perform quite well, so we won't modify any $\sigma$ values here. 
+Note that by default `validation_diagnostics` groups the outputs in sets of three. Since here we have 8 outputs, we set the argument `row` to 2: this is not strictly necessary but improves the format of the grid of plots obtained. As in deterministic case, we can enlarge the $\sigma$ values of the mean emulators to obtain more conservative emulators, if needed. Based on the diagnostics above, all emulators perform quite well, so we won't modify any $\sigma$ values here. In order to access a specific mean emulator, you can type `ems$expectation$variable_name`. For example, to double the $\sigma$ of the mean emulator for $I25$, you would type `stoch_emulators$expectation$I25 <- stoch_emulators$expectation$I25$mult_sigma(2)`.
 
 Note that the output `vd` of the `validation_diagnostics` function is a dataframe containing all parameter sets in the validation dataset that fail at least one of the three diagnostics. This dataframe can be used to automate the validation step of the history matching process. For example, one can consider the diagnostic check to be successful if `vd` contains at most $5\%$ of all points in the validation dataset. In this way, the user is not required to manually inspect each validation diagnostic for each emulator at each wave of the process. 
 
+It is possible to automate the validation process. If we have a list of trained emulators `ems`, we can start with an iterative process to ensure that emulators do not produce misclassifications:
+
+1. check if there are misclassifications for each emulator (middle column diagnostic in plot above) with the function `classification_diag`;
+
+2. in case of misclassifications, increase the `sigma` (say by 10%) and go to step 1.
+
+The code below implements this approach:
+
+```{r, eval = F}
+for (j in 1:length(ems)) {
+      misclass <- nrow(classification_diag(ems[[j]], targets, validation, plt = FALSE))
+      while(misclass > 0) {
+        ems[[j]] <- ems[[j]]$mult_sigma(1.1)
+        misclass <- nrow(classification_diag(ems[[j]], targets, validation, plt = FALSE))
+      }
+}
+```
+
+The step above helps us ensure that our emulators are not overconfident and do not rule out parameter sets that give a match  with the empirical data.
+
+Once misclassifications have been eliminated, the second step is to ensure that the emulators’ predictions agree, within tolerance given by their uncertainty, with the simulator output. We can check how many validation points fail the first of the diagnostics (left column in plot above) with the function `comparison_diag`, and discard an emulator if it produces too many failures. The code below implements this, removing emulators for which more than 10% of validation points do not pass the first diagnostic:
+
+```{r, eval=F}
+bad.ems <- c()
+for (j in 1:length(ems)) {
+          bad.model <- nrow(comparison_diag(ems[[j]], targets, validation, plt = FALSE))
+          if (bad.model > floor(nrow(validation)/10)) {
+            bad.ems <- c(bad.ems, j)
+   }
+}
+ems <- ems[!seq_along(ems) %in% bad.ems]
+```
+
+Note that the code provided above gives just an example of how one can automate the validation process and can be adjusted to produce a more or less conservative approach. Furthermore, it does not check for more subtle aspects, e.g. whether an emulator systematically underestimates/overestimates the corresponding model output. For this reason, even though automation can be a useful tool (e.g. if we are running several calibration processes and/or have a long list of targets), we should not think of it as a full replacement for a careful, in-depth inspection from an expert.
+
 # Proposing new points {#propnewpoints}
 
-To generate a set of non-implausible points, based on the trained emulators, we use the function `generate_new_runs`, exactly as in the deterministic case: 
+A video presentation of this section can be found [here](https://youtu.be/ZSx-iuI0Hb4).
+
+To generate a set of non-implausible points, based on the trained emulators, we use the function `generate_new_design`, exactly as in the deterministic case: 
 
 ```{r}
-new_points <- generate_new_runs(stoch_emulators, 150, targets)
+new_points <- generate_new_design(stoch_emulators, 150, targets)
 ```
 
 Here we generated $150$ points, since we are going to use $100$ of them to train new emulators and $50$ of them to validate new emulators (as done in the first wave). We can visualise the non-implausible space at the end of this first wave using `plot_wrap`:
@@ -810,8 +876,10 @@ As shown in [Tutorial 2](https://danny-sc.github.io/Tutorial_2/), it is also pos
 
 # Second wave {#secondwave}
 
+A video presentation of this section can be found [here](https://youtu.be/iLgjdUUUBkQ).
+
 ```{info, title = NA, collapsible = FALSE}
-To perform a second wave of history matching and emulation we follow the same procedure as in the previous sections, with two caveats. First, since the parameter sets in `new_points` tend to lie in a small region inside the original input space, we will train the new emulators only on the non-implausible region found in wave one. This can be done simply setting the argument `check.ranges` to `TRUE` in the function `variance_emulator_from_data`.
+To perform a second wave of history matching and emulation we follow the same procedure as in the previous sections, with two caveats. First, since the parameter sets in `new_points` tend to lie in a small region inside the original input space, we will train the new emulators only on the non-implausible region found in wave one. This can be done simply setting the argument `check.ranges` to `TRUE` in the function `emulator_from_data`.
 ```
 
 It is a good strategy to increase the number of repetitions used at each wave: this, paired with the fact later waves emulators are trained on a reduced space, allows to create more and more precise emulators. Using this principle, we run the model $50$ times on each parameter set in `new_points` (for the first wave we used $25$ repetitions). We then bind all results to create a dataframe `wave1` and we split this into two subsets, `new_all_training` to train the new emulators and `new_all_valid` to validate them. We select the first 5000 rows (corresponding to the first 100 parameter sets in `new_points`) for the training data and the last 2500 (corresponding to the last 50 parameter sets in `new_points`) for the validation data.
@@ -832,11 +900,11 @@ new_all_training <- wave1[1:5000,]
 new_all_valid <- wave1[5001:7500,]
 ```
 
-To train new emulators we use `variance_emulator_from_data`, passing the new training data, the outputs names and the initial ranges of the parameters. We also set `check.ranges` to `TRUE` to ensure that the new emulators are trained only on the non-implausible region found in wave one. 
+To train new emulators we use `emulator_from_data`, passing the new training data, the outputs names and the initial ranges of the parameters. We also set `check.ranges` to `TRUE` to ensure that the new emulators are trained only on the non-implausible region found in wave one, and `emulator_type = ‘variance’` to indicate that we want to train stochastic emulators. 
 
 ```{r}
-new_stoch_emulators <- variance_emulator_from_data(new_all_training, output_names, ranges, 
-                                                   check.ranges=TRUE)
+new_stoch_emulators <- emulator_from_data(new_all_training, output_names, ranges, 
+                                          check.ranges=TRUE, emulator_type = 'variance')
 ```
 
 
@@ -846,62 +914,10 @@ As usual, before using the obtained emulators, we need to check their diagnostic
 vd <- validation_diagnostics(new_stoch_emulators, targets, new_all_valid, plt=TRUE, row=2)
 ```
 
-Since these diagnostics look good, we can generate new non-implausible points. Here is the second caveat: we now need to pass both `new_stoch_emulators` and `stoch_emulators` to the `generate_new_runs` function, since a point needs to be non-implausible for all emulators trained so far, and not just for emulators trained in the current wave:
+Since these diagnostics look good, we can generate new non-implausible points. Here is the second caveat: we now need to pass both `new_stoch_emulators` and `stoch_emulators` to the `generate_new_design` function, since a point needs to be non-implausible for all emulators trained so far, and not just for emulators trained in the current wave:
 
 ```{r}
-new_new_points <- generate_new_runs(c(new_stoch_emulators, stoch_emulators), 150, targets)
-```
-
-
-# Visualisation of the non-implausible space by wave
-
-In this last section we present three visualisations that can be used to compare the non-implausible space identified at different waves of the process.
-
-The first visualisation, obtained through the function `wave_points`, shows the distribution of the non-implausible space for the waves of interest. For example, let us plot the distribution of five of the parameter sets at the beginning, at the end of wave one and at the end of wave two:
-
-```{r,  fig.height=8, fig.width=8}
-wave_points(list(initial_points, new_points, new_new_points), 
-            input_names = names(ranges)[c(2,3,6,8,9)]) +
-            ggplot2::theme(axis.text.x = ggplot2::element_text(size = 6))
-```
-
-Here we can easily see that the distributions of the second and third wave points are more narrow than those of the first wave. 
-
-The second visualisation allows us to assess how much better parameter sets at later waves perform compared to the original `initial_points`. 
-
-
-```{info, title = NA, collapsible = FALSE}
-In this workshop we assume that for a given parameter set $x$, we are interested in matching the mean of the stochastic model to the observed data, rather than in the output of each realisation at $x$, which will be dealt with in future versions. For this reason, we will use the helper function `aggregate_points`, which calculates the mean of each output across different realisations. 
-
-``{r,  fig.height=8, fig.width=8}
-all_training_aggregated <- aggregate_points(all_training, names(ranges))
-new_all_training_aggregated <- aggregate_points(new_all_training, names(ranges))
-new_new_all_training_aggregated <- aggregate_points(new_all_training, names(ranges))
-all_aggregated <- list(all_training_aggregated, new_all_training_aggregated, 
-                       new_new_all_training_aggregated)
-``
-
-We are now ready to compare the performance of parameter sets at the end of each wave, passing the list `all_aggregated` and the list `targets` to the function `simulator_plot`:
-
-``{r,  fig.height=8, fig.width=8, cache=F}
-simulator_plot(all_aggregated, targets, barcol = "grey")
-``
-```
-
-Note that in this call we set `barcol="grey"` in order to have the target intervals in white, instead of black. This plot clearly shows that parameter sets at the end of the first and second wave perform better than the initial set of points. 
-
-In the third visualisation, output values for non-implausible parameter sets at each wave are shown for each combination of two outputs:
-
-```{r,  fig.height=8, fig.width=8}
-wave_values(all_aggregated, targets, l_wid=1) 
-```
-
-The argument `l_wid` is optional and helps customise the width of the red lines that create the target boxes. The main diagonal shows the distribution of each output at the end of each wave, with the vertical red lines indicating the lower and upper bounds of the target. Above and below the main diagonal are plots for each pair of targets, with rectangles indicating the target area where full fitting points should lie (the ranges are normalised in the figures above the diagonals). These graphs can provide additional information on output distributions, such as correlations between them. For example, here we see positive correlations between $I25$ and $R40$.
-
-In this workshop we have shown how to perform the first three waves of the history matching process on a stochastic model. Of course, more waves are required, in order to complete the calibration task. 
-
-```{info, title="Remind me of possible stopping criteria"}
-Since this is an iterative process, at the end of each wave we need to decide whether to perform a new wave or to stop. One possible stopping criterion consists of comparing the emulator uncertainty and the target uncertainty. If the former is larger, another wave can be performed, since new, more confident emulators can potentially help further reduce the non-implausible space. If the uncertainty of emulators is smaller than the uncertainty in the targets, improving the performance of emulators would not make a substantial difference, and additional waves would not be beneficial. We may also choose to stop the iterations when we get emulators that provide us with full fitting points at a sufficiently high rate. In such a case, rather than spending time training new emulators, we can generate new points with the function `generate_new_runs` using the current emulators until we find enough full fitting ones. Finally, we might end up with all the input space deemed implausible at the end of a wave. In this situation, we would deduce that there are no parameter sets that give an acceptable match with the data: in particular, this would raise doubts about the adequacy of the chosen model, or input and/or output ranges.
+new_new_points <- generate_new_design(c(new_stoch_emulators, stoch_emulators), 150, targets)
 ```
 
 Below we run the model on the points provided by the second wave of history matching:
@@ -922,8 +938,65 @@ new_new_all_training <- wave2[1:10000,]
 
 ```
 
+# Visualisation of the non-implausible space by wave
+
+ A video presentation of this section can be found [here](https://youtu.be/pFfUvG8cyGE).
+
+In this last section we present three visualisations that can be used to compare the non-implausible space identified at different waves of the process.
+
+
+The first visualisation, obtained through the function `wave_points`, shows the distribution of the non-implausible space for the waves of interest. For example, let us plot the distribution of five of the parameter sets at the beginning, at the end of wave one and at the end of wave two:
+
+```{r,  fig.height=8, fig.width=8}
+wave_points(list(initial_points, new_points, new_new_points), 
+            input_names = names(ranges)[c(2,3,6,8,9)]) +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(size = 6))
+```
+
+Here we can easily see that the distributions of the second and third wave points are more narrow than those of the first wave. 
+
+The second visualisation allows us to assess how much better parameter sets at later waves perform compared to the original `initial_points`. 
+
+
+```{info, title = NA, collapsible = FALSE}
+In this workshop we assume that for a given parameter set $x$, we are interested in matching the mean of the stochastic model to the observed data, rather than in the output of each realisation at $x$, which will be dealt with in future versions. For this reason, we will use the helper function `aggregate_points`, which calculates the mean of each output across different realisations. 
+
+``{r,  fig.height=8, fig.width=8}
+all_training_aggregated <- aggregate_points(all_training, names(ranges))
+new_all_training_aggregated <- aggregate_points(new_all_training, names(ranges))
+new_new_all_training_aggregated <- aggregate_points(new_new_all_training, names(ranges))
+all_aggregated <- list(all_training_aggregated, new_all_training_aggregated, 
+                       new_new_all_training_aggregated)
+``
+
+We are now ready to compare the performance of parameter sets at the end of each wave, passing the list `all_aggregated` and the list `targets` to the function `simulator_plot`:
+
+``{r,  fig.height=8, fig.width=8}
+simulator_plot(all_aggregated, targets, barcol = "grey")
+``
+```
+
+Note that in this call we set `barcol="grey"` in order to have the target intervals in white, instead of black. This plot clearly shows that parameter sets at the end of the first and second wave perform better than the initial set of points. 
+
+In the third visualisation, output values for non-implausible parameter sets at each wave are shown for each combination of two outputs:
+
+```{r,  fig.height=8, fig.width=8}
+wave_values(all_aggregated, targets, l_wid=1) 
+```
+
+The argument `l_wid` is optional and helps customise the width of the red lines that create the target boxes. The main diagonal shows the distribution of each output at the end of each wave, with the vertical red lines indicating the lower and upper bounds of the target. Above and below the main diagonal are plots for each pair of targets, with rectangles indicating the target area where full fitting points should lie (the ranges are normalised in the figures above the diagonals). These graphs can provide additional information on output distributions, such as correlations between them. For example, here we see positive correlations between $I25$ and $R40$.
+
+In this workshop we have shown how to perform the first three waves of the history matching process on a stochastic model. Of course, more waves are required, in order to complete the calibration task. 
+
+```{info, title="Remind me of possible stopping criteria"}
+Since this is an iterative process, at the end of each wave we need to decide whether to perform a new wave or to stop. One possible stopping criterion consists of comparing the emulator uncertainty and the target uncertainty. If the former is larger, another wave can be performed, since new, more confident emulators can potentially help further reduce the non-implausible space. If the uncertainty of emulators is smaller than the uncertainty in the targets, improving the performance of emulators would not make a substantial difference, and additional waves would not be beneficial. We may also choose to stop the iterations when we get emulators that provide us with full fitting points at a sufficiently high rate. In such a case, rather than spending time training new emulators, we can generate new points with the function `generate_new_design` using the current emulators until we find enough full fitting ones. Finally, we might end up with all the input space deemed implausible at the end of a wave. In this situation, we would deduce that there are no parameter sets that give an acceptable match with the data: in particular, this would raise doubts about the adequacy of the chosen model, or input and/or output ranges.
+```
+
+
 
 # Dealing with bimodality
+
+A video presentation of this section can be found [here](https://youtu.be/smR4FlbKVaE).
 
 In the previous sections of this workshop we dealt with stochasticity, but not with bimodality, i.e. when one can perform multiple repetitions at a given parameter set and find two distinct classes of behaviour. This is because our SEIRS model did not show any bimodal behaviour in the outputs for the times considered, i.e. for $t$ up to $200$. Let us suppose now that we are interested also in later times. Running the model on `chosen_params` using `get_results` up to time $t=500$ and plotting the results for "I" and "R" we obtain:
 
@@ -1007,6 +1080,7 @@ Note that these are the same exact targets chosen for the deterministic workshop
 
 Since we are now interested in times after $t=200$ too, we need to rerun the parameter sets in `initial_points`, obtaining `bimodal_initial_results`. We then bind all elements in `bimodal_initial_results` to obtain a dataframe `bimodal_wave0`, which we split into a training and a validation set:
 
+
 ```{r}
 bimodal_initial_results <- list()
 with_progress({
@@ -1029,11 +1103,12 @@ bimodal_output_names <- c("I25", "I40", "I100", "I200", "I250", "I400", "I500",
 ## Bimodal Emulators
 
 ```{info, title = NA, collapsible = FALSE}
-To train bimodal emulators we use the function `bimodal_emulator_from_data`, which requires the training data, the names of the outputs to emulate, and the ranges of the parameters:
+To train bimodal emulators we use the function `emulator_from_data` specifying `emulator_type = 'multistate'`, which requires the training data, the names of the outputs to emulate, and the ranges of the parameters:
 
 ``{r, fig.height=7, fig.width=7}
-bimodal_emulators <- bimodal_emulator_from_data(bimodal_all_training, 
-                                                bimodal_output_names, ranges)
+bimodal_emulators <- emulator_from_data(bimodal_all_training, 
+                                        bimodal_output_names, ranges,
+                                        emulator_type = 'multistate')
 ``
 
 Behind the scenes, this function does the following:
@@ -1049,13 +1124,13 @@ Behind the scenes, this function does the following:
 Let us now plot the expectation of the mean emulator of $R400$ for each mode fixing all non-shown parameters to their values in `chosen_params`: 
 
 ``{r, fig.height=7, fig.width=9}
-emulator_plot(bimodal_emulators$mode1$expectation$R400, params = c('alpha', 'epsilon'), 
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha', 'epsilon')])
-emulator_plot(bimodal_emulators$mode2$expectation$R400, params = c('alpha', 'epsilon'), 
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha', 'epsilon')])
+emulator_plot(bimodal_emulators$mode1$expectation$R400, params = c('mu', 'alpha'), 
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('mu', 'alpha')])
+emulator_plot(bimodal_emulators$mode2$expectation$R400, params = c('mu', 'alpha'), 
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('mu', 'alpha')])
 ``
 
-We immediately notice that there is large difference between the two plots, with mode 2 containing higher values than mode 1. This indicates that mode 1 is the one where the infection dies out.
+We notice that mode 2 tends to contain higher values than mode 1. This indicates that mode 1 is the one where the infection dies out.
 
 It is also instructive to plot the expectation of the proportion emulator. We use the argument `fixed_vals` to set the parameters that are not shown in the plot to be as in `chosen_params`:
   
@@ -1065,23 +1140,24 @@ emulator_plot(bimodal_emulators$prop, params = c('alpha', 'epsilon'),
               geom_point(aes(x=1/7, y=1/50), size=3)
 ``
 
-The plot only depends on values of $\epsilon$, indicating that $\alpha$ is not an active variable for the proportion emulator. When $\epsilon$ and $\alpha$ are equal to their values in `chosen_params` (black dot), we see that the proportion of points in mode 1, where the infection dies out, is around 0.7-0.8. This is in accordance with the plot produced at the beginning of this section, where the infection died out on the majority of trajectories.
+The plot shows that the proportion of points in mode 1, where the infection dies out, is around 0.58. This is in accordance with the plot produced at the beginning of this section, where the infection died out on the majority of trajectories.
 ```
+
 
 ```{info, title = "How are bimodal outputs identified?"}
 Suppose we are given a dataframe containing parameter sets (with repetitions) and the corresponding outputs. An individual row of that dataframe would be of the form  $(x, y) = (x_1, x_2, x_3, …, x_p, y_1, y_2, … y_n)$ where $x$ are the paramters and $y$ the outputs. To check and classify bimodality we follow the steps below:
   
-1) We split the dataframe into unique parameter sets, collecting repetitions for each parameter set together. For each unique parameter set $\bar{x}$ and each $i=1,...,n$, we use clustering on $y_i$, allowing a maximum of two clusters. If the optimal clustering has two clusters, we consider the output $y_i$ to be bimodal at $\bar{x}$; otherwise we consider it unimodal.
+1. We split the dataframe into unique parameter sets, collecting repetitions for each parameter set together. For each unique parameter set $\bar{x}$ and each $i=1,...,n$, we use clustering on $y_i$ (with finite normal [mixture models](https://en.wikipedia.org/wiki/Mixture_model)), allowing a maximum of two clusters. If the optimal clustering has two clusters, we consider the output $y_i$ to be bimodal at $\bar{x}$; otherwise we consider it unimodal.
 
-2) If for all parameter sets and all outputs, the optimal clustering is a single cluster, then we have no bimodality: we then perform stochastic emulation using `variance_emulator_from_data`. Otherwise, for each output $y_i$ and each unique parameter set $\bar{x}$:
+2. If for all parameter sets and all outputs, the optimal clustering is a single cluster, then we have no bimodality: we then perform stochastic emulation using `emulator_from_data` with `emulator_type = 'variance'`. Otherwise, for each output $y_i$ and each unique parameter set $\bar{x}$:
   
-2a) If there is no bimodality in $y_i$ for $\bar{x}$, then all the data from $\bar{x}$ for $y_i$ will be used in each mode.
+    2.1. If there is no bimodality in $y_i$ for $\bar{x}$, then all the data from $\bar{x}$ for $y_i$ will be used in each mode.
 
-2b) If there is bimodality in $y_i$ for $\bar{x}$, then we determine which of the repetitions in the parameter set $\bar{x}$ correspond to the identified bimodality (again, using clustering). The dataset for that parameter set $\bar{x}$ gets split into two: one for each mode.
+    2.2. If there is bimodality in $y_i$ for $\bar{x}$, then we determine which of the repetitions in the parameter set $\bar{x}$ correspond to the identified bimodality (again, using clustering). The dataset for that parameter set $\bar{x}$ gets split into two: one for each mode.
 
-3) We collate the data for each mode, resulting in (for each output) two dataframes of repetitions. Note that it is unlikely that each mode gets the same number of repetitions to train to.
+3. We collate the data for each mode, resulting in (for each output) two dataframes of repetitions. Note that it is unlikely that each mode gets the same number of repetitions to train to.
 
-4) For each mode, we train a list of emulators (one for each output) using the data appropriate to that mode. 
+4. For each mode, we train a list of emulators (one for each output) using the data appropriate to that mode. 
 Note that there is a slight redundancy here, in that if there was no bimodality in an output for any parameter choices, then we have essentially trained the same emulator twice.
 
 The process described above is schematically represented in the figure below:
@@ -1102,8 +1178,8 @@ Confirm that mode 1 is where the infection dies out by comparing the plots of th
 We use `emulator_plot` to produce the suggested plots:
 
 ``{r, fig.height=8, fig.width=8}
-emulator_plot(bimodal_emulators$mode1$expectation$I400, params = c('alpha', 'epsilon'))
-emulator_plot(bimodal_emulators$mode2$expectation$I400, params = c('alpha', 'epsilon'))
+emulator_plot(bimodal_emulators$mode1$expectation$I400, params = c('mu', 'alpha'))
+emulator_plot(bimodal_emulators$mode2$expectation$I400, params = c('mu', 'alpha'))
 ``
 
 The values in the plot for mode 1 are lower than those for mode 2: this reflects the fact that mode 2 experiences a second wave around $t=300$, while in mode 1 the infection dies out after the first wave (around $t=40$). 
@@ -1164,11 +1240,11 @@ bimodal_emulators$mode2$expectation$I500 <- bimodal_emulators$mode2$expectation$
 
 ## Proposing new points
 
-Generating a set of non-implausible points, based on the trained emulators, is done in exactly the same way as it was in Section \@ref(propnewpoints), using the function `generate_new_runs`. In this case we need to use the function `subset_emulators` to remove the emulators for the outputs at $t=450$ (the seventh and fourteenth emulators), for which we did not set targets: 
+Generating a set of non-implausible points, based on the trained emulators, is done in exactly the same way as it was in Section \@ref(propnewpoints), using the function `generate_new_design`. In this case we need to use the function `subset_emulators` to remove the emulators for the outputs at $t=450$ (the seventh and fourteenth emulators), for which we did not set targets: 
 
-```{r,cache=F}
-new_points <- generate_new_runs(bimodal_emulators, 150, bimodal_targets, nth=1)
+```{r}
+new_points <- generate_new_design(bimodal_emulators, 150, bimodal_targets, nth=1)
 ```
 
-Similarly, performing the second wave is done in the same as it was in Section \@ref(secondwave), replacing `variance_emulator_from_data` with `bimodal_emulator_from_data`.
+Similarly, performing the second wave is done in the same as it was in Section \@ref(secondwave), replacing `emulator_type = 'variance'` with `emulator_type = 'multistate'` when calling `emulator_from_data`.
 
