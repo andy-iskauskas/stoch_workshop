@@ -658,7 +658,7 @@ output_names <- c("I25", "I40", "I100", "I200", "R25", "R40", "R100", "R200")
 
 # Emulators 
 
-A video presentation of this section can be found [here](https://youtu.be/G_Zf5Zw0Ivc).
+A video presentation of this section can be found [here](https://www.youtube.com/watch?v=-jz7GwKZCDE).
 
 In this section we will train stochastic emulators, which take into account the fact that each time the model is run using the same parameter set, it will generate different output. 
 
@@ -850,7 +850,7 @@ Note that the code provided above gives just an example of how one can automate 
 
 # Proposing new points {#propnewpoints}
 
-A video presentation of this section can be found [here](https://youtu.be/ZSx-iuI0Hb4).
+A video presentation of this section can be found [here](https://www.youtube.com/watch?v=GdosIthM1Mg).
 
 To generate a set of non-implausible points, based on the trained emulators, we use the function `generate_new_design`, exactly as in the deterministic case: 
 
@@ -940,7 +940,7 @@ new_new_all_training <- wave2[1:10000,]
 
 # Visualisation of the non-implausible space by wave
 
- A video presentation of this section can be found [here](https://youtu.be/pFfUvG8cyGE).
+A video presentation of this section can be found [here](https://youtu.be/pFfUvG8cyGE).
 
 In this last section we present three visualisations that can be used to compare the non-implausible space identified at different waves of the process.
 
@@ -996,7 +996,7 @@ Since this is an iterative process, at the end of each wave we need to decide wh
 
 # Dealing with bimodality
 
-A video presentation of this section can be found [here](https://youtu.be/smR4FlbKVaE).
+A video presentation of this section can be found [here](https://www.youtube.com/watch?v=h9PVHHf459Q).
 
 In the previous sections of this workshop we dealt with stochasticity, but not with bimodality, i.e. when one can perform multiple repetitions at a given parameter set and find two distinct classes of behaviour. This is because our SEIRS model did not show any bimodal behaviour in the outputs for the times considered, i.e. for $t$ up to $200$. Let us suppose now that we are interested also in later times. Running the model on `chosen_params` using `get_results` up to time $t=500$ and plotting the results for "I" and "R" we obtain:
 
