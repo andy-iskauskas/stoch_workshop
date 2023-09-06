@@ -3,9 +3,6 @@ title: "Workshop 2: calibrating a stochastic model"
 author: "Danny Scarponi, Andy Iskauskas"
 site: bookdown::bookdown_site
 output:
-    bookdown::pdf_book:
-        includes:
-            in_header: header.tex
     bookdown::gitbook:
         config:
             sharing: null
@@ -14,6 +11,9 @@ output:
         includes:
             in_header: _toggle.html
         keep_md: TRUE
+    bookdown::pdf_book:
+        includes:
+            in_header: header.tex
 bibliography: references.bib  
 linkcolor: blue
 documentclass: book
@@ -823,10 +823,10 @@ The code below implements this approach:
 
 ```{r, eval = F}
 for (j in 1:length(ems)) {
-      misclass <- nrow(classification_diag(ems[[j]], targets, validation, plt = FALSE))
+      misclass <- nrow(classification_diag(ems$expectation[[j]], targets, validation, plt = FALSE))
       while(misclass > 0) {
-        ems[[j]] <- ems[[j]]$mult_sigma(1.1)
-        misclass <- nrow(classification_diag(ems[[j]], targets, validation, plt = FALSE))
+        ems$expectation[[j]] <- ems$expectation[[j]]$mult_sigma(1.1)
+        misclass <- nrow(classification_diag(ems$expectation[[j]], targets, validation, plt = FALSE))
       }
 }
 ```
@@ -838,12 +838,12 @@ Once misclassifications have been eliminated, the second step is to ensure that 
 ```{r, eval=F}
 bad.ems <- c()
 for (j in 1:length(ems)) {
-          bad.model <- nrow(comparison_diag(ems[[j]], targets, validation, plt = FALSE))
+          bad.model <- nrow(comparison_diag(ems$expectation[[j]], targets, validation, plt = FALSE))
           if (bad.model > floor(nrow(validation)/10)) {
             bad.ems <- c(bad.ems, j)
    }
 }
-ems <- ems[!seq_along(ems) %in% bad.ems]
+ems <- subset_emulators(ems, names(targets)[!seq_along(ems) %in% bad.ems])
 ```
 
 Note that the code provided above gives just an example of how one can automate the validation process and can be adjusted to produce a more or less conservative approach. Furthermore, it does not check for more subtle aspects, e.g. whether an emulator systematically underestimates/overestimates the corresponding model output. For this reason, even though automation can be a useful tool (e.g. if we are running several calibration processes and/or have a long list of targets), we should not think of it as a full replacement for a careful, in-depth inspection from an expert.
