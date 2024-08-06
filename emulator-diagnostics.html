@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>7 Emulator diagnostics | Workshop 2: calibrating a stochastic model</title>
   <meta name="description" content="An interactive introduction to the hmer package" />
-  <meta name="generator" content="bookdown 0.35 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
   <meta property="og:title" content="7 Emulator diagnostics | Workshop 2: calibrating a stochastic model" />
   <meta property="og:type" content="book" />
@@ -95,7 +95,7 @@
 
 <style type="text/css">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -218,7 +218,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <h1><span class="header-section-number">7</span> Emulator diagnostics<a href="emulator-diagnostics.html#emulator-diagnostics" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>A video presentation of this section can be found <a href="https://youtu.be/UcWIzhdMF3Y">here</a>.</p>
 <p>The function <code>validation_diagnostics</code> can be used as in the deterministic case, to get three diagnostics for each emulated output.</p>
-<p><infobutton id="displayTextunnamed-chunk-28" onclick="javascript:toggle('unnamed-chunk-28');">Show: Remind me of what each diagnostics means</infobutton></p>
+<p><infobutton id="displayTextunnamed-chunk-28" onclick="javascript:toggle('unnamed-chunk-28');">Show: Remind me of what each diagnostic means</infobutton></p>
 <div id="toggleTextunnamed-chunk-28" style="display: none">
 <div class="panel panel-default">
 <div class="panel-body">
@@ -226,9 +226,9 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <p><strong>The second column</strong> compares the emulator implausibility to the equivalent model implausibility (i.e. the implausibility calculated replacing the emulator output with the model output). There are three cases to consider:</p>
 <ul>
 <li>The emulator and model both classify a set as implausible or non-implausible (bottom-left and top-right quadrants). This is fine. Both are giving the same classification for the parameter set.</li>
-<li>The emulator classifies a set as non-implausible, while the model rules it out (top-left quadrant): this is also fine. The emulator should not be expected to shrink the parameter space as much as the model does, at least not on a single wave. Parameter sets classified in this way will survive this wave, but may be removed on subsequent waves as the emulators grow more accurate on a reduced parameter space.</li>
+<li>The emulator classifies a set as non-implausible, while the model rules it out (top-left quadrant): this is also fine. The emulator should not be expected to shrink the parameter space as much as the model does, at least not on a single wave. Parameter sets classified in this way will not be ruled out in this wave, but may be removed on subsequent waves as the emulators grow more accurate on a reduced parameter space.</li>
 <li>The emulator rules out a set, but the model does not (bottom-right quadrant): these are the problem sets, suggesting that the emulator is ruling out parts of the parameter space that it should not be ruling out.
-As for the first test, we should be alarmed only if we spot a systematic problem, with <span class="math inline">\(5\%\)</span> or more of the points in the bottom-right quadrant.</li>
+As for the first test, we should be alarmed only if we spot a systematic problem, but we might be more circumspect about any of the points in the bottom-right quadrant if we wish to be careful about matching to data: a point that is misclassified in this way may correspond to a neighbourhood of points that would be acceptable and are going to be ruled out.</li>
 </ul>
 <p>Finally, <strong>the third column</strong> gives the standardised errors of the emulator outputs in light of the model output: for each validation point, the difference between the emulator output and the model output is calculated, and then divided by the standard deviation <span class="math inline">\(\sigma\)</span> of the emulator at the point. The general rule is that we want our standardised errors to be somewhat normally distributed around <span class="math inline">\(0\)</span>, with <span class="math inline">\(95\%\)</span> of the probability mass between <span class="math inline">\(-3\)</span> and <span class="math inline">\(3\)</span>. The blue bars indicate the distribution of the standardised errors when we restrict our attention only to parameter sets that produce outputs close to the targets. When looking at the standard errors plot, we should ask ourselves at least the following questions:</p>
 <ul>
@@ -239,10 +239,11 @@ As for the first test, we should be alarmed only if we spot a systematic problem
 </div>
 </div></li>
 </ul>
-<p>We call <code>validation_diagnostics</code> passing it the mean emulators, the list of targets, the validation set:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="emulator-diagnostics.html#cb22-1" tabindex="-1"></a>vd <span class="ot">&lt;-</span> <span class="fu">validation_diagnostics</span>(stoch_emulators<span class="sc">$</span>expectation, targets, all_valid, <span class="at">plt=</span><span class="cn">TRUE</span>, <span class="at">row=</span><span class="dv">2</span>)</span></code></pre></div>
+<p>We call <code>validation_diagnostics</code> passing it the mean emulators, the list of targets, and the validation set:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="emulator-diagnostics.html#cb23-1" tabindex="-1"></a>vd <span class="ot">&lt;-</span> <span class="fu">validation_diagnostics</span>(stoch_emulators<span class="sc">$</span>expectation, targets, all_valid, <span class="at">plt=</span><span class="cn">TRUE</span>, <span class="at">row=</span><span class="dv">2</span>)</span></code></pre></div>
 <p><img src="_main_files/figure-html/unnamed-chunk-29-1.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-29-2.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-29-3.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-29-4.png" style="display: block; margin: auto;" /></p>
 <p>Note that by default <code>validation_diagnostics</code> groups the outputs in sets of three. Since here we have 8 outputs, we set the argument <code>row</code> to 2: this is not strictly necessary but improves the format of the grid of plots obtained. As in deterministic case, we can enlarge the <span class="math inline">\(\sigma\)</span> values of the mean emulators to obtain more conservative emulators, if needed. Based on the diagnostics above, all emulators perform quite well, so we won’t modify any <span class="math inline">\(\sigma\)</span> values here. In order to access a specific mean emulator, you can type <code>ems$expectation$variable_name</code>. For example, to double the <span class="math inline">\(\sigma\)</span> of the mean emulator for <span class="math inline">\(I25\)</span>, you would type <code>stoch_emulators$expectation$I25 &lt;- stoch_emulators$expectation$I25$mult_sigma(2)</code>.</p>
+<p>A more in-depth discussion of diagnostics and how to improve problematic emulators can be found in <a href="https://andy-iskauskas.github.io/determ_workshop/emulator-diagnostics.html">Workshop 1</a>; note, however, that the <code>diagnostic_pass()</code> function is not currently supported for stochastic emulation. We can, of course, automate some aspects of the diagnostic process, which we detail below.</p>
 <p>Note that the output <code>vd</code> of the <code>validation_diagnostics</code> function is a dataframe containing all parameter sets in the validation dataset that fail at least one of the three diagnostics. This dataframe can be used to automate the validation step of the history matching process. For example, one can consider the diagnostic check to be successful if <code>vd</code> contains at most <span class="math inline">\(5\%\)</span> of all points in the validation dataset. In this way, the user is not required to manually inspect each validation diagnostic for each emulator at each wave of the process.</p>
 <p>It is possible to automate the validation process. If we have a list of trained emulators <code>ems</code>, we can start with an iterative process to ensure that emulators do not produce misclassifications:</p>
 <ol style="list-style-type: decimal">
@@ -250,23 +251,23 @@ As for the first test, we should be alarmed only if we spot a systematic problem
 <li><p>in case of misclassifications, increase the <code>sigma</code> (say by 10%) and go to step 1.</p></li>
 </ol>
 <p>The code below implements this approach:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="emulator-diagnostics.html#cb23-1" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ems)) {</span>
-<span id="cb23-2"><a href="emulator-diagnostics.html#cb23-2" tabindex="-1"></a>      misclass <span class="ot">&lt;-</span> <span class="fu">nrow</span>(<span class="fu">classification_diag</span>(ems<span class="sc">$</span>expectation[[j]], targets, validation, <span class="at">plt =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb23-3"><a href="emulator-diagnostics.html#cb23-3" tabindex="-1"></a>      <span class="cf">while</span>(misclass <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb23-4"><a href="emulator-diagnostics.html#cb23-4" tabindex="-1"></a>        ems<span class="sc">$</span>expectation[[j]] <span class="ot">&lt;-</span> ems<span class="sc">$</span>expectation[[j]]<span class="sc">$</span><span class="fu">mult_sigma</span>(<span class="fl">1.1</span>)</span>
-<span id="cb23-5"><a href="emulator-diagnostics.html#cb23-5" tabindex="-1"></a>        misclass <span class="ot">&lt;-</span> <span class="fu">nrow</span>(<span class="fu">classification_diag</span>(ems<span class="sc">$</span>expectation[[j]], targets, validation, <span class="at">plt =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb23-6"><a href="emulator-diagnostics.html#cb23-6" tabindex="-1"></a>      }</span>
-<span id="cb23-7"><a href="emulator-diagnostics.html#cb23-7" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="emulator-diagnostics.html#cb24-1" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ems)) {</span>
+<span id="cb24-2"><a href="emulator-diagnostics.html#cb24-2" tabindex="-1"></a>      misclass <span class="ot">&lt;-</span> <span class="fu">nrow</span>(<span class="fu">classification_diag</span>(ems<span class="sc">$</span>expectation[[j]], targets, validation, <span class="at">plt =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb24-3"><a href="emulator-diagnostics.html#cb24-3" tabindex="-1"></a>      <span class="cf">while</span>(misclass <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb24-4"><a href="emulator-diagnostics.html#cb24-4" tabindex="-1"></a>        ems<span class="sc">$</span>expectation[[j]] <span class="ot">&lt;-</span> ems<span class="sc">$</span>expectation[[j]]<span class="sc">$</span><span class="fu">mult_sigma</span>(<span class="fl">1.1</span>)</span>
+<span id="cb24-5"><a href="emulator-diagnostics.html#cb24-5" tabindex="-1"></a>        misclass <span class="ot">&lt;-</span> <span class="fu">nrow</span>(<span class="fu">classification_diag</span>(ems<span class="sc">$</span>expectation[[j]], targets, validation, <span class="at">plt =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb24-6"><a href="emulator-diagnostics.html#cb24-6" tabindex="-1"></a>      }</span>
+<span id="cb24-7"><a href="emulator-diagnostics.html#cb24-7" tabindex="-1"></a>}</span></code></pre></div>
 <p>The step above helps us ensure that our emulators are not overconfident and do not rule out parameter sets that give a match with the empirical data.</p>
 <p>Once misclassifications have been eliminated, the second step is to ensure that the emulators’ predictions agree, within tolerance given by their uncertainty, with the simulator output. We can check how many validation points fail the first of the diagnostics (left column in plot above) with the function <code>comparison_diag</code>, and discard an emulator if it produces too many failures. The code below implements this, removing emulators for which more than 10% of validation points do not pass the first diagnostic:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="emulator-diagnostics.html#cb24-1" tabindex="-1"></a>bad.ems <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb24-2"><a href="emulator-diagnostics.html#cb24-2" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ems)) {</span>
-<span id="cb24-3"><a href="emulator-diagnostics.html#cb24-3" tabindex="-1"></a>          bad.model <span class="ot">&lt;-</span> <span class="fu">nrow</span>(<span class="fu">comparison_diag</span>(ems<span class="sc">$</span>expectation[[j]], targets, validation, <span class="at">plt =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb24-4"><a href="emulator-diagnostics.html#cb24-4" tabindex="-1"></a>          <span class="cf">if</span> (bad.model <span class="sc">&gt;</span> <span class="fu">floor</span>(<span class="fu">nrow</span>(validation)<span class="sc">/</span><span class="dv">10</span>)) {</span>
-<span id="cb24-5"><a href="emulator-diagnostics.html#cb24-5" tabindex="-1"></a>            bad.ems <span class="ot">&lt;-</span> <span class="fu">c</span>(bad.ems, j)</span>
-<span id="cb24-6"><a href="emulator-diagnostics.html#cb24-6" tabindex="-1"></a>   }</span>
-<span id="cb24-7"><a href="emulator-diagnostics.html#cb24-7" tabindex="-1"></a>}</span>
-<span id="cb24-8"><a href="emulator-diagnostics.html#cb24-8" tabindex="-1"></a>ems <span class="ot">&lt;-</span> <span class="fu">subset_emulators</span>(ems, <span class="fu">names</span>(targets)[<span class="sc">!</span><span class="fu">seq_along</span>(ems) <span class="sc">%in%</span> bad.ems])</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="emulator-diagnostics.html#cb25-1" tabindex="-1"></a>bad.ems <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb25-2"><a href="emulator-diagnostics.html#cb25-2" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(ems)) {</span>
+<span id="cb25-3"><a href="emulator-diagnostics.html#cb25-3" tabindex="-1"></a>          bad.model <span class="ot">&lt;-</span> <span class="fu">nrow</span>(<span class="fu">comparison_diag</span>(ems<span class="sc">$</span>expectation[[j]], targets, validation, <span class="at">plt =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb25-4"><a href="emulator-diagnostics.html#cb25-4" tabindex="-1"></a>          <span class="cf">if</span> (bad.model <span class="sc">&gt;</span> <span class="fu">floor</span>(<span class="fu">nrow</span>(validation)<span class="sc">/</span><span class="dv">10</span>)) {</span>
+<span id="cb25-5"><a href="emulator-diagnostics.html#cb25-5" tabindex="-1"></a>            bad.ems <span class="ot">&lt;-</span> <span class="fu">c</span>(bad.ems, j)</span>
+<span id="cb25-6"><a href="emulator-diagnostics.html#cb25-6" tabindex="-1"></a>   }</span>
+<span id="cb25-7"><a href="emulator-diagnostics.html#cb25-7" tabindex="-1"></a>}</span>
+<span id="cb25-8"><a href="emulator-diagnostics.html#cb25-8" tabindex="-1"></a>ems <span class="ot">&lt;-</span> <span class="fu">subset_emulators</span>(ems, <span class="fu">names</span>(targets)[<span class="sc">!</span><span class="fu">seq_along</span>(ems) <span class="sc">%in%</span> bad.ems])</span></code></pre></div>
 <p>Note that the code provided above gives just an example of how one can automate the validation process and can be adjusted to produce a more or less conservative approach. Furthermore, it does not check for more subtle aspects, e.g. whether an emulator systematically underestimates/overestimates the corresponding model output. For this reason, even though automation can be a useful tool (e.g. if we are running several calibration processes and/or have a long list of targets), we should not think of it as a full replacement for a careful, in-depth inspection from an expert.</p>
 </div>
             </section>

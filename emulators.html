@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>5 Emulators | Workshop 2: calibrating a stochastic model</title>
   <meta name="description" content="An interactive introduction to the hmer package" />
-  <meta name="generator" content="bookdown 0.35 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
   <meta property="og:title" content="5 Emulators | Workshop 2: calibrating a stochastic model" />
   <meta property="og:type" content="book" />
@@ -95,7 +95,7 @@
 
 <style type="text/css">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -220,7 +220,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <p>In this section we will train stochastic emulators, which take into account the fact that each time the model is run using the same parameter set, it will generate different output.</p>
 <div id="brief-recap-on-the-structure-of-an-emulator" class="section level2 hasAnchor" number="5.1">
 <h2><span class="header-section-number">5.1</span> Brief recap on the structure of an emulator<a href="emulators.html#brief-recap-on-the-structure-of-an-emulator" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>We very briefly recap the general structure of a univariate emulator (see <a href="https://danny-sc.github.io/determ_workshop/index.html">Workshop 1</a> for more details):</p>
+<p>We very briefly recap the general structure of a univariate emulator (see <a href="https://andy-iskauskas.github.io/determ_workshop/index.html">Workshop 1</a> for more details):</p>
 <p><span class="math display">\[f(x) = g(x)^T \xi + u(x),\]</span></p>
 <p>where <span class="math inline">\(g(x)^T \xi\)</span> is a regression term and <span class="math inline">\(u(x)\)</span> is a <a href="https://en.wikipedia.org/wiki/Stationary_process#Weak_or_wide-sense_stationarity">weakly stationary process</a> with mean zero.</p>
 <p>The regression term, which mimics the global behaviour of the model output, is specified by a vector of functions of the parameters <span class="math inline">\(g(x)\)</span> which determine the shape and complexity of the regression
@@ -230,8 +230,8 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <p>In this workshop, <span class="math inline">\(u(x)\)</span> is assumed to be a Gaussian process, with covariance structure given by</p>
 <p><span class="math display">\[\text{Cov}(u(x), u(x&#39;))= \sigma^2  c(x,x^{\prime}) \]</span></p>
 <p>where <span class="math inline">\(c\)</span> is the square-exponential correlation function</p>
-<p><span class="math display">\[c(x,x^{\prime}) :=  \exp\left(\frac{-\sum\limits_{i}(x_{i}-x_{i}^{\prime})^2}{\theta^2}\right)\]</span></p>
-<p>where <span class="math inline">\(x_i\)</span> is the ith-component of the parameter set <span class="math inline">\(x.\)</span> The term <span class="math inline">\(\sigma^2\)</span> is the <strong>emulator variance</strong>, i.e. the variance of <span class="math inline">\(u(x)\)</span>, and reflects how far we expect the output to be from the regression hypersurface, while
+<p><span class="math display">\[c(x,x^{\prime}) :=  \exp\left(\frac{-\sum_i(x_{i}-x_{i}^{\prime})^2}{\theta^2}\right)\]</span></p>
+<p>where <span class="math inline">\(x_i\)</span> is the ith-component of the parameter set <span class="math inline">\(x\)</span>. The term <span class="math inline">\(\sigma^2\)</span> is the <strong>prior emulator variance</strong>, i.e. the variance of <span class="math inline">\(u(x)\)</span>, and reflects how far we expect the output to be from the regression hypersurface, while
 <span class="math inline">\(\theta\)</span> is the <strong>correlation length</strong> of the process, and determines how close two parameter sets must be in order for the corresponding residuals to be non-negligibly correlated.</p>
 <div class="panel panel-default">
 <div class="panel-body">
@@ -249,8 +249,8 @@ In the deterministic workshop, we said that in order to train an emulator, the <
 <p>The function <code>emulator_from_data</code> with <code>emulator_type = 'variance'</code> returns two sets of emulators: one for the variance and one for the expectation of each model output. Behind the scenes, <code>emulator_from_data</code> does the following:</p>
 <ul>
 <li><p>First, it estimates the variance of each model output of interest at each provided parameter set: this is possible since <code>all_training</code> contains several model runs at each parameter set.</p></li>
-<li><p>Using the obtained variance data, it then trains an emulator for the variance of each of the outputs of interest. These emulators will be referred to as <strong>variance emulators</strong> and can be access typing <code>stoch_emulators$variance</code>.</p></li>
-<li><p>Finally, emulators for the mean of each output are built. These emulators will be referred to as mean emulators and can be accessed typing <code>stoch_emulators$expectation</code>. The main difference in the training of emulators between the stochastic and the deterministic case is that here, for each output, we use the variance emulator to inform our choice for a component of <span class="math inline">\(\sigma\)</span>, that which is due to the stochasticity of the model: for each parameter set <span class="math inline">\(x\)</span>, the variance emulator gives us an estimate of the variance of the model output at <span class="math inline">\(x\)</span>. Note that this step is specific to the treatment of stochastic models, where it is important to account for the fact that different areas of the parameter space often give rise to quite different levels of stochasticity in the outputs.</p>
+<li><p>Using the obtained variance data, it then trains an emulator for the variance of each of the outputs of interest. These emulators will be referred to as <strong>variance emulators</strong> and can be accessed by typing <code>stoch_emulators$variance</code>.</p></li>
+<li><p>Finally, emulators for the mean of each output are built. These emulators will be referred to as mean emulators and can be accessed by typing <code>stoch_emulators$expectation</code>. The main difference in the training of emulators between the stochastic and the deterministic case is that here, for each output, we use the variance emulator to inform our choice for a component of <span class="math inline">\(\sigma\)</span>, that which is due to the stochasticity of the model: for each parameter set <span class="math inline">\(x\)</span>, the variance emulator gives us an estimate of the variance of the model output at <span class="math inline">\(x\)</span>. Note that this step is specific to the treatment of stochastic models, where it is important to account for the fact that different areas of the parameter space often give rise to quite different levels of stochasticity in the outputs.</p>
 </div>
 </div></li>
 </ul>
@@ -267,7 +267,7 @@ In the deterministic workshop, we said that in order to train an emulator, the <
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="emulators.html#cb19-1" tabindex="-1"></a><span class="fu">emulator_plot</span>(stoch_emulators<span class="sc">$</span>expectation<span class="sc">$</span>I100, <span class="at">params =</span> <span class="fu">c</span>(<span class="st">&#39;epsilon&#39;</span>, <span class="st">&#39;alpha&#39;</span>),</span>
 <span id="cb19-2"><a href="emulators.html#cb19-2" tabindex="-1"></a>     <span class="at">fixed_vals =</span> all_training[<span class="dv">1</span>, <span class="fu">names</span>(ranges)[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">7</span>)]], <span class="at">plot_type =</span> <span class="st">&#39;var&#39;</span>) <span class="sc">+</span></span>
 <span id="cb19-3"><a href="emulators.html#cb19-3" tabindex="-1"></a>   <span class="fu">geom_point</span>(<span class="at">data =</span> all_training[<span class="dv">1</span>,], <span class="fu">aes</span>(<span class="at">x =</span> epsilon, <span class="at">y =</span> alpha))</span></code></pre></div>
-<p><img src="_main_files/figure-html/unnamed-chunk-71-1.png" style="display: block; margin: auto;" /></p>
+<p><img src="_main_files/figure-html/unnamed-chunk-116-1.png" style="display: block; margin: auto;" /></p>
 We see that the black point in the dark blue area, corresponding to the first point in <code>all_training</code>, does not have variance zero. This is because the mean emulator is trying to predict the ‘true’ mean at the point, but it has only been given a sample mean, which it cannot assume is equal to the ‘true’ mean. The emulator internally compensates for this incomplete information, resulting in the variance not being zero, even at points in the training set. This compensation also means that we can work with different numbers of replicates at different parameter sets. In general, for each training/validation parameter set, we should use as many repetitions as is feasible given the model complexity. More repetitions will provide a better estimate of the variance, which in turn allows to train more accurate mean emulators. If a model is relatively fast, then it is worth doing 50-100 repetitions per parameter set; if it is slower, then we can work with fewer repetitions (even just 5-10 per parameter set). This applies to different regions of the parameter space within a single model, too: if one part of the parameter space is much slower to run (e.g. parameter sets with higher beta values, which tend to produce more infections, slowing down agent-based models), then we could run fewer repetitions in those parts of parameter space.
 </div>
 </div>
