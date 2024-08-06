@@ -161,7 +161,7 @@ get_results <- function(params, nreps = 100, outs, times, raw = FALSE) {
 
 # Objectives
 
-In this workshop, you will learn how to perform history matching with emulation on stochastic models, using the [hmer](https://github.com/Tandethsquire/hmer) package. Much of the calibration process is the same for stochastic and deterministic models, and we therefore recommend that before starting this workshop you complete [Workshop 1](https://danny-sc.github.io/determ_workshop/index.html), which shows how to perform history matching with emulation on deterministic models. In this workshop, we cover the overall process in less detail, with new information that is specific to stochastic models highlighted using boxes:
+In this workshop, you will learn how to perform history matching with emulation on stochastic models, using the [hmer](https://github.com/andy-iskauskas/hmer) package. Much of the calibration process is the same for stochastic and deterministic models, and we therefore recommend that before starting this workshop you complete [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html), which shows how to perform history matching with emulation on deterministic models. In this workshop, we cover the overall process in less detail, with new information that is specific to stochastic models highlighted using boxes:
 
 ```{info, title = NA, collapsible = FALSE}
 
@@ -169,13 +169,13 @@ Boxes like these contain material that is specific to the calibration of stochas
 
 ```
 
-There are two reasons why epidemiologists may choose to use a stochastic model structure. The first is when modelling small numbers (e.g. a small population size, or small numbers of cases), where we are interested in the results of individual runs (e.g. to answer the question of what is the probability of an outbreak taking off following the introduction of an infection?). In this first case, we may wish to find input parameter sets where any individual model run is consistent with the calibration targets.
+There are many reasons why we might want to use a stochastic model instead of a deterministic model. One reason is that we may be modelling small population sizes with a small initial infected population, where the question of whether a disease spreads through the population ('take-off') or is quickly recovered from without affecting the bulk of the susceptible population ('die-off') can be extremely relevant. A deterministic model cannot give statements on the likelihood of either event occurring, even though both may be possible given a fixed set of initial coniditons in a stochastic model.
 
-The second is when some characteristic that we wish to include in a model requires the use of an individual-based model, which are necessarily stochastic (e.g. if we wish to accurately capture patterns of repeated contact within and outside households). In this second case, we are not interested in the variation between individual runs at the same input parameter set, only in the mean result when averaged over large numbers of model runs. We therefore want to find input parameter sets where the mean outputs are consistent with the calibration targets.
+Another reason to use stochastic models is when some characteristic of the disease that we wish to include requires the use of an **individual-based model** (ABM), which are necessarily stochastic. For example, we may believe that patterns of repeated contact within households are crucial to modelling the disease spread, and we cannot (accurately) represent this in a deterministic model. Here we might not be interested in the individual trajectories for a single run (or *realisation*) of a stochastic model, but only the mean result when aggregated over many such realisations, but in any event we must be aware of the variability between the realisations at a given parameter set.
 
 <!-- When calibrating a stochastic model, in many applications the primary interest consists in identifying all parameter sets for which the mean of the model closely matches the observed data. An epidemiological example of this situation is when individual-based models are used (e.g. to account for household structure and transmission between household members), even though the aim is to study the average model output across multiple runs and there is no interest in the stochasticity of the model in itself. In other applications, the interest is instead in examining the properties and behaviour of all possible trajectories of the model, and in finding the parameter sets that can produce trajectories matching the observed data. In epidemiology, this is for example the case when we are dealing with small populations and we are directly interested in the stochasticity of the model (e.g. if we want to answer the following question: after an infected individual is inserted in a population, does transmission take off or die out?). In this workshop we focus on the former case and develop an emulator structure that helps us match to the mean of the model. This allows us to rule out large portions of the input parameter space, and it can be very useful even in the case in which one is interested in single trajectories of the model. An implementation of history matching with emulation dealing with single realisations of stochastic models will appear in future versions of our package.    -->
 
-In this workshop we focus on the second case, and develop an emulator structure that helps us match to the mean of the model. This allows us to rule out large portions of the input parameter space, and it can be very useful even in the case in which one is interested in single runs of the model. An implementation of history matching with emulation dealing with single runs of stochastic models will appear in future versions of our package. 
+In this workshop, we will focus on modelling the mean response as described above, using `hmer` to allow us to accurately represent the stochastic variability in realisations. This approach is applicable in a wide variety of situations, and can be useful even if we are ultimately interested in single runs of the model. An implementation of history matching and emulation that focuses on matching to individual realisations will appear in future versions of the package.
 
 Note that when running the workshop code on your device, you should not expect the hmer visualisation tools to produce the same exact output as the one you can find in the following sections. This is mainly because the maximinLHS function, that you will use to define the initial parameter sets on which emulators are trained, does return different Latin Hypercube designs at each call. 
 
@@ -302,7 +302,7 @@ get_results <- function(params, nreps = 100, outs, times, raw = FALSE) {
 
 # An overview of history matching with emulation and hmer
 
- A video presentation of this section can be found [here](https://youtu.be/xSQYRmkiVgc).
+A video presentation of this section can be found [here](https://youtu.be/xSQYRmkiVgc).
 
 In this section we briefly recap the history matching with emulation workflow and we explain how various steps of the process can be performed using hmer functions.  For a more detailed introduction to history matching with emulation  in the case of stochastic models you can check [Ian Vernon's presentation](https://youtu.be/OnCK8So3mwc).
 
@@ -365,7 +365,7 @@ and four possible transitions
 
 SEIRS models are suitable to study those infectious diseases that have an incubation period and do not confer permanent immunity.">
 SEIRS</abbr></span>
-model which we used in [Workshop 1](https://danny-sc.github.io/determ_workshop/index.html), but this time we introduce stochasticity. The deterministic SEIRS model used in [Workshop 1](https://danny-sc.github.io/determ_workshop/index.html) was described by the following differential equations:
+model which we used in [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html), but this time we introduce stochasticity. The deterministic SEIRS model used in [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html) was described by the following differential equations:
 
 \begin{align}
 \frac{dS}{dt} &= b N - \frac{\beta(t)IS}{N} + \omega R -\mu S  \\ 
@@ -405,7 +405,7 @@ knitr::include_graphics('infection_rate.png')
 In order to obtain the solutions of the stochastic SEIR model for a given set of parameters, we will use a helper function, `get_results` (which is defined in the R-script). This function assumes an initial population of 900 susceptible individuals, 100 exposed individuals, and no infectious or recovered individuals, and uses the Gillespie algorithm to generate trajectories of the model. The minimum specifications for this function are: the parameter set(s) to run the model on, a set of outputs (e.g. `c("S","R")`), and a set of times (e.g. `c(10,100,150)`) that we are interested in. The default behaviour of `get_results` is to run the model 100 times on the parameter set(s) provided, but more or fewer repetitions can be obtained, using the argument `nreps`. The function `get_results` returns a dataframe containing a row for each repetition at each parameter set provided, with the first nine columns showing the values of the parameters and the subsequent columns showing the requested outputs at the requested times. If `raw` is set to `TRUE`, all outputs and all times are instead returned: this is useful if we want to plot "continuous" trajectories.
 ```
 
-As in [Workshop 1](https://danny-sc.github.io/determ_workshop/index.html), the outputs obtained with the parameter set
+As in [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html), the outputs obtained with the parameter set
 
 ```{r}
 chosen_params <- c(
@@ -522,8 +522,9 @@ legend('topleft', legend = c('Infected', "Recovered", "Infected - higher beta",
        col = c(3,4,"#E69F00","#CC79A7"), inset = c(0.01, 0.01))
 ``
 
-We see that the peaks of recovered and infectious individuals have now increased, as expected. 
-What happens when a lower value of the recovery rate $\gamma$ is used?
+We see that the peaks of recovered and infectious individuals have now increased, as expected. We might also note that the spread of runs has also changed: our higher $\beta$ parameter has resulted in a less variable collection of realisations, especially after time $t=50$.
+
+What happens when a lower value of the recovery rate, $\gamma$, is used?
 ``{r, fig.height=8, fig.width=8}
 smaller_gamma_params <- c(
   b = 1/(60*365),
@@ -545,8 +546,9 @@ legend('topleft', legend = c('Infected', "Recovered", "Infected - smaller gamma"
        col = c(3,4,"#E69F00","#CC79A7"), inset = c(0.01, 0.01))
 ``
 
-As one expects, this causes the peak of infectious individuals to increase.
-Finally, what happens when we increase the rate at which immunity is lost $\omega$?
+As one expects, this causes the peak of infectious individuals to increase, while the variability of runs does not appreciably change.
+
+Finally, what happens when we increase the rate at which immunity is lost, $\omega$?
   
 ``{r, fig.height=8, fig.width=8}
 higher_omega_params <- c(
@@ -569,7 +571,9 @@ legend('topleft', legend = c('Infected', "Recovered", "Infected - higher omega",
        col = c(3,4,"#E69F00","#CC79A7"), inset = c(0.05, 0.05))
 ``
 
-This causes the peak of recovered individuals to slightly decrease.
+This causes the peak of recovered individuals to slightly decrease; however, the decrease in peak is not so substantial as to have this change outweigh the effect of stochasticity.
+
+The three examples above give an indication of the importance of considering stochasticity: even where there are appreciable changes in behaviour that align with our physical intuition about the disease, their effects may not be as clear-cut as we would expect. Furthermore, the amount of variability as well as the model output can be different at different parts of parameter space. When matching to such a model, we must therefore be cogniscent of these two aspects.
 ```
 
 
@@ -597,7 +601,7 @@ ranges = list(
 )
 ```
 
-We then turn to the targets we will match: the number of infectious individuals $I$ and the number of recovered individuals $R$ at times $t=25, 40, 100, 200$. The targets can be specified by a pair (val, sigma), where ‘val’ represents the measured value of the output and ‘sigma’ represents its standard deviation, or by a pair (min, max), where min represents the lower bound and max the upper bound for the target. Since in [Workshop 1](https://danny-sc.github.io/determ_workshop/index.html) we used the former formulation, here we will show the latter: 
+We then turn to the targets we will match: the number of infectious individuals $I$ and the number of recovered individuals $R$ at times $t=25, 40, 100, 200$. The targets can be specified by a pair (val, sigma), where ‘val’ represents the measured value of the output and ‘sigma’ represents its standard deviation, or by a pair (min, max), where min represents the lower bound and max the upper bound for the target. Since in [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html) we used the former formulation, here we will show the latter: 
   
 ```{r}
 targets <- list(
@@ -645,8 +649,7 @@ for (i in 1:nrow(initial_points)) {
 })
 ```
 
-Note that `initial_results` is a list of length $3750$, since it has a row for each of the 25 repetitions of the 150 parameter sets in `initial_points`.  Finally, we bind all elements in `initial_results`  to obtain a data frame `wave0 ` and we split it
-in two parts: the first 2500 elements (corresponding to the first 100 parameter sets) for the training set, `all_training`, and the last 1250 for the validation set (corresponding to the last 50 parameter sets), `all_valid`.
+Note that `initial_results` is a list of length $3750$, since it has a row for each of the 25 repetitions of the 150 parameter sets in `initial_points`.  Finally, we bind all elements in `initial_results`  to obtain a data frame `wave0 ` and we split it in two parts: the first 2500 elements (corresponding to the first 100 parameter sets) for the training set, `all_training`, and the last 1250 for the validation set (corresponding to the last 50 parameter sets), `all_valid`.
 
 ```{r}
 wave0 <- data.frame(do.call('rbind', initial_results))
@@ -664,7 +667,7 @@ In this section we will train stochastic emulators, which take into account the 
 
 ## Brief recap on the structure of an emulator
 
-We very briefly recap the general structure of a univariate emulator (see [Workshop 1](https://danny-sc.github.io/determ_workshop/index.html) for more details):
+We very briefly recap the general structure of a univariate emulator (see [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html) for more details):
 
 $$f(x) = g(x)^T \xi + u(x),$$
 
@@ -682,9 +685,9 @@ $$\text{Cov}(u(x), u(x'))= \sigma^2  c(x,x^{\prime}) $$
   
 where  $c$ is the square-exponential correlation function
 
-$$c(x,x^{\prime}) :=  \exp\left(\frac{-\sum\limits_{i}(x_{i}-x_{i}^{\prime})^2}{\theta^2}\right)$$
+$$c(x,x^{\prime}) :=  \exp\left(\frac{-\sum_i(x_{i}-x_{i}^{\prime})^2}{\theta^2}\right)$$
   
-where $x_i$ is the ith-component of the parameter set $x.$ The term $\sigma^2$ is the **emulator variance**, i.e. the variance of $u(x)$, and reflects how far we expect the output to be from the regression hypersurface, while 
+where $x_i$ is the ith-component of the parameter set $x$. The term $\sigma^2$ is the **prior emulator variance**, i.e. the variance of $u(x)$, and reflects how far we expect the output to be from the regression hypersurface, while 
 $\theta$ is the **correlation length** of the process, and determines how close two parameter sets must be in order for the corresponding residuals to be non-negligibly correlated. 
 
 ```{info, title = NA, collapsible = FALSE}
@@ -706,9 +709,9 @@ The function `emulator_from_data` with `emulator_type = 'variance'` returns two 
 - First, it estimates the variance of each model output of interest at each provided parameter set: this is possible since `all_training` contains several model runs at each parameter set. 
 
 
-- Using the obtained variance data, it then trains an emulator for the variance of each of the outputs of interest. These emulators will be referred to as **variance emulators** and can be access typing `stoch_emulators$variance`.
+- Using the obtained variance data, it then trains an emulator for the variance of each of the outputs of interest. These emulators will be referred to as **variance emulators** and can be accessed by typing `stoch_emulators$variance`.
 
-- Finally, emulators for the mean of each output are built. These emulators will be referred to as mean emulators and can be accessed typing `stoch_emulators$expectation`. The main difference in the training of emulators between the stochastic and the deterministic case is that here, for each output, we use the variance emulator to inform our choice for a component of $\sigma$, that which is due to the stochasticity of the model: for each parameter set $x$, the variance emulator gives us an estimate of the variance of the model output at $x$. Note that this step is specific to the treatment of stochastic models, where it is important to account for the fact that different areas of the parameter space often give rise to quite different levels of stochasticity in the outputs.
+- Finally, emulators for the mean of each output are built. These emulators will be referred to as mean emulators and can be accessed by typing `stoch_emulators$expectation`. The main difference in the training of emulators between the stochastic and the deterministic case is that here, for each output, we use the variance emulator to inform our choice for a component of $\sigma$, that which is due to the stochasticity of the model: for each parameter set $x$, the variance emulator gives us an estimate of the variance of the model output at $x$. Note that this step is specific to the treatment of stochastic models, where it is important to account for the fact that different areas of the parameter space often give rise to quite different levels of stochasticity in the outputs.
 
 ```
 
@@ -745,18 +748,18 @@ We will first briefly review the definition of an implausibility measure.
 
 For a given stochastic model output and a given target, the implausibility measures the difference between the output and the target, taking into account all sources of uncertainty. For a parameter set $x$, a particular choice of implausibility, useful for either matching to the mean of the stochastic model, or its spread of possible values, is:
 
-$$\text{Imp}(x) = \frac{|\text{E}[m(x)]-z|}{\sqrt{V_0 + V_c(x)+V_s(x)+V_m}},$$
+$$\text{Imp}(x) = \frac{|\text{E}[m(x)]-z|}{\sqrt{V_0 + V_c(x) + V_s(x) + V_m}},$$
 
 where $\text{E}[m(x)]$ is the expected value of the mean of the stochastic model, $z$ the target, and the terms in the denominator refer to various forms of uncertainty. In particular
 
 - $V_0$ is the variance associated with the observation uncertainty;
 - $V_c(x)$ refers to the uncertainty one introduces when using the emulator output instead of the model output itself;
-- $V_s(x)$ is the ensemble variability and represents the stochastic nature of the model. This term is used to create an appropriate representation of the uncertainty on either the mean or the set of possible realisations of the stochastic model.
+- $V_s(x)$ is the 'ensemble variability' and represents the stochastic nature of the model. This term is used to create an appropriate representation of the uncertainty on either the mean or the set of possible realisations of the stochastic model.
 - $V_m$ is the model discrepancy, accounting for possible mismatches between the model and reality.
 
-Since in this case study we want to emulate our model, without reference to a real-life analogue, the model represents the reality perfectly. For this reason we have $V_m=0$. The term $V_s$, which was zero when we worked on the deterministic SEIRS model ([Workshop 1](https://danny-sc.github.io/determ_workshop/index.html)), is now non-zero, in order to account for the stochasticity of the model.
+Since in this case study we want to emulate our model, without reference to a real-life analogue, we claim that the model represents the reality perfectly. For this reason we have $V_m=0$. The term $V_s(x)$, which was zero when we worked on the deterministic SEIRS model ([Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html)), is now non-zero, in order to account for the stochasticity of the model.
 
-A very large value of $\text{Imp}(x)$ means that we can be confident that the parameter set $x$ does not provide a good match to the observed data, even factoring in the additional uncertainty that comes with the use of emulators.
+A very large value of $\text{Imp}(x)$ means that we can be confident that the parameter set $x$ does not provide a good match to the observed data, even factoring in the additional uncertainty that comes with the use of emulators. Conversely, a small value can mean two things: either the predicted mean is close to the observed value, suggesting that the parameter set may provide a good fit to data; or the collected uncertainties (including the ensemble or stochastic variability) is large, suggesting that exploration of this region of parameter space would be informative.
 
 To plot the maximum implausibility (across all emulators), we set `plot_type` to `nimp` in the call to `emulator_plot`:
 
@@ -786,15 +789,15 @@ A video presentation of this section can be found [here](https://youtu.be/UcWIzh
 
 The function `validation_diagnostics` can be used as in the deterministic case, to get three diagnostics for each emulated output. 
 
-```{info, title="Remind me of what each diagnostics means"}
+```{info, title="Remind me of what each diagnostic means"}
 **The first column** shows the emulator outputs plotted against the model outputs. In particular, the emulator expectation is plotted against the model output for each validation point, providing the dots in the graph. The emulator uncertainty at each validation point is shown in the form of a vertical interval that goes from $3\sigma$ below to $3\sigma$ above the emulator expectation, where $\sigma$ is the emulator variance at the considered point.  An 'ideal' emulator would exactly reproduce the model results: this behaviour is represented by the green line $f(x)=E[f(x)]$ (this is a diagonal line, visible here only in the bottom left and top right corners). Any parameter set whose emulator prediction lies more than $3\sigma$ away from the model output is highlighted in red. Note that we do not need to have no red points for the test to be passed: since we are plotting $3\sigma$ bounds, statistically speaking it is ok to have up to $5\%$ of validation points in red (see [Pukelsheim's $3\sigma$ rule](https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule)).
 
 **The second column** compares the emulator implausibility to the equivalent model implausibility (i.e. the implausibility calculated replacing the emulator output with the model output). There are three cases to consider:
   
   - The emulator and model both classify a set as implausible or non-implausible (bottom-left and top-right quadrants). This is fine. Both are giving the same classification for the parameter set. 
-- The emulator classifies a set as non-implausible, while the model rules it out (top-left quadrant): this is also fine. The emulator should not be expected to shrink the parameter space as much as the model does, at least not on a single wave. Parameter sets classified in this way will survive this wave, but may be removed on subsequent waves as the emulators grow more accurate on a reduced parameter space.
+- The emulator classifies a set as non-implausible, while the model rules it out (top-left quadrant): this is also fine. The emulator should not be expected to shrink the parameter space as much as the model does, at least not on a single wave. Parameter sets classified in this way will not be ruled out in this wave, but may be removed on subsequent waves as the emulators grow more accurate on a reduced parameter space.
 - The emulator rules out a set, but the model does not (bottom-right quadrant): these are the problem sets, suggesting that the emulator is ruling out parts of the parameter space that it should not be ruling out.
-As for the first test, we should be alarmed only if we spot a systematic problem, with $5\%$ or more of the points in the bottom-right quadrant. 
+As for the first test, we should be alarmed only if we spot a systematic problem, but we might be more circumspect about any of the points in the bottom-right quadrant if we wish to be careful about matching to data: a point that is misclassified in this way may correspond to a neighbourhood of points that would be acceptable and are going to be ruled out. 
 
 Finally, **the third column** gives the standardised errors of the emulator outputs in light of the model output: for each validation point, the difference between the emulator output and the model output is calculated, and then divided by the standard deviation $\sigma$ of the emulator at the point. The general rule is that we want our standardised errors to be somewhat normally distributed around $0$, with $95\%$ of the probability mass between $-3$ and $3$. The blue bars indicate the distribution of the standardised errors when we restrict our attention only to parameter sets that produce outputs close to the targets. When looking at the standard errors plot, we should ask ourselves at least the following questions:
   
@@ -803,13 +806,15 @@ Finally, **the third column** gives the standardised errors of the emulator outp
 - Is the histogram skewing significantly in one direction or the other? If this is the case, the emulator tends to either overestimate or underestimate the model output.
 ``` 
 
-We call `validation_diagnostics` passing it the mean emulators, the list of targets, the validation set:
+We call `validation_diagnostics` passing it the mean emulators, the list of targets, and the validation set:
 
 ```{r,  fig.height=6, fig.width=8}
 vd <- validation_diagnostics(stoch_emulators$expectation, targets, all_valid, plt=TRUE, row=2)
 ```
 
 Note that by default `validation_diagnostics` groups the outputs in sets of three. Since here we have 8 outputs, we set the argument `row` to 2: this is not strictly necessary but improves the format of the grid of plots obtained. As in deterministic case, we can enlarge the $\sigma$ values of the mean emulators to obtain more conservative emulators, if needed. Based on the diagnostics above, all emulators perform quite well, so we won't modify any $\sigma$ values here. In order to access a specific mean emulator, you can type `ems$expectation$variable_name`. For example, to double the $\sigma$ of the mean emulator for $I25$, you would type `stoch_emulators$expectation$I25 <- stoch_emulators$expectation$I25$mult_sigma(2)`.
+
+A more in-depth discussion of diagnostics and how to improve problematic emulators can be found in [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/emulator-diagnostics.html); note, however, that the `diagnostic_pass()` function is not currently supported for stochastic emulation. We can, of course, automate some aspects of the diagnostic process, which we detail below.
 
 Note that the output `vd` of the `validation_diagnostics` function is a dataframe containing all parameter sets in the validation dataset that fail at least one of the three diagnostics. This dataframe can be used to automate the validation step of the history matching process. For example, one can consider the diagnostic check to be successful if `vd` contains at most $5\%$ of all points in the validation dataset. In this way, the user is not required to manually inspect each validation diagnostic for each emulator at each wave of the process. 
 
@@ -864,7 +869,7 @@ Here we generated $150$ points, since we are going to use $100$ of them to train
 plot_wrap(new_points, ranges)
 ```
 
-Here we see which parameters are more or less constrained at the end of the first wave. For example, it seems clear that low values of $\gamma$ cannot produce a match (cf. penultimate column). We can also deduce relationships between parameters: $\beta_1$ and $\epsilon$ are an example of negatively-correlated parameters. If $\beta_1$ is large then $\epsilon$ needs to be small, and vice versa. Other parameters, such as $\omega$ or $\mu$, are instead still spread out across their initial range.
+Here we see which parameters are more or less constrained at the end of the first wave. For example, the penultimate column suggests that low values of $\gamma$ cannot produce a match. We can also deduce relationships between parameters: $\beta_1$ and $\epsilon$ are an example of negatively-correlated parameters. If $\beta_1$ is large then $\epsilon$ needs to be small, and vice versa. Other parameters, such as $\omega$ or $\mu$, are instead still spread out across their initial range.
 
 As shown in [Tutorial 2](https://danny-sc.github.io/Tutorial_2/), it is also possible to perform a full wave of emulation and history matching using the function `full_wave`, which needs the following information:
 
@@ -882,7 +887,9 @@ A video presentation of this section can be found [here](https://youtu.be/iLgjdU
 To perform a second wave of history matching and emulation we follow the same procedure as in the previous sections, with two caveats. First, since the parameter sets in `new_points` tend to lie in a small region inside the original input space, we will train the new emulators only on the non-implausible region found in wave one. This can be done simply setting the argument `check.ranges` to `TRUE` in the function `emulator_from_data`.
 ```
 
-It is a good strategy to increase the number of repetitions used at each wave: this, paired with the fact later waves emulators are trained on a reduced space, allows to create more and more precise emulators. Using this principle, we run the model $50$ times on each parameter set in `new_points` (for the first wave we used $25$ repetitions). We then bind all results to create a dataframe `wave1` and we split this into two subsets, `new_all_training` to train the new emulators and `new_all_valid` to validate them. We select the first 5000 rows (corresponding to the first 100 parameter sets in `new_points`) for the training data and the last 2500 (corresponding to the last 50 parameter sets in `new_points`) for the validation data.
+It is often a good strategy to increase the number of repetitions used at each wave: this, paired with the fact later waves emulators are trained on a reduced space, allows to create more and more precise emulators. The rationale behind this is that, as the emulators rule out space, at each wave we obtain a more stable parameter space to explore. This more stable space is likely to 'behave' and less likely to result in long model runs (which is common in stochastic models where corners of space are evaluated, often resulting in extremely large numbers of infected people). We can therefore perform more realisations at each parameter combination for the same computational budget as earlier waves.
+
+Using this principle, we run the model $50$ times on each parameter set in `new_points` (for the first wave we used $25$ repetitions). We then bind all results to create a dataframe `wave1` and we split this into two subsets, `new_all_training` to train the new emulators and `new_all_valid` to validate them. We select the first 5000 rows (corresponding to the first 100 parameter sets in `new_points`) for the training data and the last 2500 (corresponding to the last 50 parameter sets in `new_points`) for the validation data.
 
 ```{r}
 new_results <- list()
@@ -944,8 +951,7 @@ A video presentation of this section can be found [here](https://youtu.be/pFfUvG
 
 In this last section we present three visualisations that can be used to compare the non-implausible space identified at different waves of the process.
 
-
-The first visualisation, obtained through the function `wave_points`, shows the distribution of the non-implausible space for the waves of interest. For example, let us plot the distribution of five of the parameter sets at the beginning, at the end of wave one and at the end of wave two:
+The first visualisation, obtained through the function `wave_points`, shows the marginal distributions of the non-implausible space for the waves of interest. For example, let us plot the distribution of five of the parameter sets at the beginning, at the end of wave one and at the end of wave two:
 
 ```{r,  fig.height=8, fig.width=8}
 wave_points(list(initial_points, new_points, new_new_points), 
@@ -953,7 +959,7 @@ wave_points(list(initial_points, new_points, new_new_points),
             ggplot2::theme(axis.text.x = ggplot2::element_text(size = 6))
 ```
 
-Here we can easily see that the distributions of the second and third wave points are more narrow than those of the first wave. 
+Here we can easily see that the spread of the second and third wave points are more narrow than those of the first wave. 
 
 The second visualisation allows us to assess how much better parameter sets at later waves perform compared to the original `initial_points`. 
 
@@ -989,7 +995,7 @@ The argument `l_wid` is optional and helps customise the width of the red lines 
 In this workshop we have shown how to perform the first three waves of the history matching process on a stochastic model. Of course, more waves are required, in order to complete the calibration task. 
 
 ```{info, title="Remind me of possible stopping criteria"}
-Since this is an iterative process, at the end of each wave we need to decide whether to perform a new wave or to stop. One possible stopping criterion consists of comparing the emulator uncertainty and the target uncertainty. If the former is larger, another wave can be performed, since new, more confident emulators can potentially help further reduce the non-implausible space. If the uncertainty of emulators is smaller than the uncertainty in the targets, improving the performance of emulators would not make a substantial difference, and additional waves would not be beneficial. We may also choose to stop the iterations when we get emulators that provide us with full fitting points at a sufficiently high rate. In such a case, rather than spending time training new emulators, we can generate new points with the function `generate_new_design` using the current emulators until we find enough full fitting ones. Finally, we might end up with all the input space deemed implausible at the end of a wave. In this situation, we would deduce that there are no parameter sets that give an acceptable match with the data: in particular, this would raise doubts about the adequacy of the chosen model, or input and/or output ranges.
+Since this is an iterative process, at the end of each wave we need to decide whether to perform a new wave or to stop. One possible stopping criterion consists of comparing the emulator uncertainty and the target uncertainty. If the former is larger, another wave can be performed, since new, more confident emulators can potentially help further reduce the non-implausible space. If the uncertainty of emulators is smaller than the uncertainty in the targets, improving the performance of emulators would not make a substantial difference, and additional waves would not be beneficial. We may also choose to stop the iterations when we get emulators that provide us with 'full-fitting' points at a sufficiently high rate. In such a case, rather than spending time training new emulators, we can generate new points with the function `generate_new_design` using the current emulators until we find enough full-fitting ones. Finally, we might end up with all the input space deemed implausible at the end of a wave. In this situation, we would deduce that there are no parameter sets that give an acceptable match with the data: in particular, this would raise doubts about the adequacy of the chosen model, or input and/or output ranges.
 ```
 
 
@@ -998,7 +1004,7 @@ Since this is an iterative process, at the end of each wave we need to decide wh
 
 A video presentation of this section can be found [here](https://www.youtube.com/watch?v=h9PVHHf459Q).
 
-In the previous sections of this workshop we dealt with stochasticity, but not with bimodality, i.e. when one can perform multiple repetitions at a given parameter set and find two distinct classes of behaviour. This is because our SEIRS model did not show any bimodal behaviour in the outputs for the times considered, i.e. for $t$ up to $200$. Let us suppose now that we are interested also in later times. Running the model on `chosen_params` using `get_results` up to time $t=500$ and plotting the results for "I" and "R" we obtain:
+In the previous sections of this workshop we dealt with stochasticity, but not with 'bimodality', when one can perform multiple repetitions at a given parameter set and find two distinct classes of behaviour. This is because our SEIRS model did not show any bimodal behaviour in the outputs for the times considered, i.e. for $t$ up to $200$. Let us suppose now that we are interested also in later times. Running the model on `chosen_params` using `get_results` up to time $t=500$ and plotting the results for "I" and "R" we obtain:
 
 ```{r, fig.height=7, fig.width=7}
 solution <- get_results(chosen_params, outs = c("I", "R"), 
@@ -1076,7 +1082,7 @@ bimodal_targets <- list(
 )
 ```
 
-Note that these are the same exact targets chosen for the deterministic workshop, [Workshop 1](https://danny-sc.github.io/determ_workshop/index.html).
+Note that these are the same exact targets chosen for the deterministic workshop, [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html).
 
 Since we are now interested in times after $t=200$ too, we need to rerun the parameter sets in `initial_points`, obtaining `bimodal_initial_results`. We then bind all elements in `bimodal_initial_results` to obtain a dataframe `bimodal_wave0`, which we split into a training and a validation set:
 
