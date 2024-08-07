@@ -15,7 +15,7 @@ library(purrr)
 library(tidyverse)
 library(progressr)
 handlers("progress")
-set.seed(123)
+set.seed(15)
 
 
 #############################################  HELPER FUNCTIONS  ############################################## 
@@ -515,20 +515,24 @@ bimodal_targets <- list(
   R500 = list(val = 508.64, sigma = 28.34)
 )
 
-# Run the model on `initial_points`
-bimodal_initial_results <- list()
-with_progress({
-  p <- progressor(nrow(initial_points))
-for (i in 1:nrow(initial_points)) {
-  model_out <- get_results(unlist(initial_points[i,]), nreps = 50, outs = c("I", "R"), 
-                           times = c(25, 40, 100, 200, 250, 400, 500))
-  bimodal_initial_results[[i]] <- model_out
-  p(message = sprintf("Run %g", i))
-}
-})
+# Import the pre-run bimodal data
+bimodal_wave0 <- read.csv(url("https://maths.dur.ac.uk/users/andrew.iskauskas/Resources/bimodal_data.csv"))
 
-# Bind the results by row to get `bimodal_wave0`
-bimodal_wave0 <- data.frame(do.call('rbind', bimodal_initial_results))
+# Alternatively, run it by hand as we did for the stochastic (non-bimodal) results
+# NOT RUN
+# bimodal_initial_results <- list()
+# with_progress({
+#   p <- progressor(nrow(initial_points))
+# for (i in 1:nrow(initial_points)) {
+#   model_out <- get_results(unlist(initial_points[i,]), nreps = 50, outs = c("I", "R"), 
+#                            times = c(25, 40, 100, 200, 250, 400, 500))
+#   bimodal_initial_results[[i]] <- model_out
+#   p(message = sprintf("Run %g", i))
+# }
+# })
+# 
+# # Bind the results by row to get `bimodal_wave0`
+# bimodal_wave0 <- data.frame(do.call('rbind', bimodal_initial_results))
 
 # Split `bimodal_wave0` into a training and a validation set
 bimodal_all_training <- bimodal_wave0[1:5000,]
@@ -554,19 +558,27 @@ emulator_plot(bimodal_emulators$mode2$expectation$R400, params = c('alpha', 'eps
 
 # Plot the proportion emulator in the (alpha,epsilon)-plane with the un-shown parameters as 
 # in `chosen_params` 
-emulator_plot(bimodal_emulators$prop, params = c('alpha', 'epsilon'),
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha' ,'epsilon')]) +
-              geom_point(aes(x=1/7, y=1/50), size=3)
+emulator_plot(bimodal_emulators$prop, params = c('beta1', 'mu'),
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('beta1' ,'mu')]) +
+              geom_point(data = data.frame(beta1 = 0.214, mu = 1/27740), aes(x = mu, y = beta1), size=3)
 
-# Plot the mean emulator for mode 1 for I400 in the (alpha,epsilon)-plane
-emulator_plot(bimodal_emulators$mode1$expectation$I400, params = c('alpha', 'epsilon'))
+### Solution to the task on checking die-out vs take-off ###
 
-# Plot the mean emulator for mode 2 for I400 in the (alpha,epsilon)-plane
-emulator_plot(bimodal_emulators$mode2$expectation$I400, params = c('alpha', 'epsilon'))
+chosen_data_frame <- data.frame(t(chosen_params))
+mode1_preds <- purrr::map_dbl(bimodal_emulators$mode1$expectation, ~.$get_exp(chosen_data_frame))
+mode2_preds <- purrr::map_dbl(bimodal_emulators$mode2$expectation, ~.$get_exp(chosen_data_frame))
+plot(mode1_preds, type = 'l', xaxt = "n", xlab = "Output", ylab = "Number")
+axis(1, at = seq_len(length(bimodal_output_names)), labels = bimodal_output_names)
+lines(mode2_preds, col = "blue")
+legend('topleft', inset = 0.05, legend = c("Mode 1", "Mode 2"), lty = 1, col = c('black', 'blue'))
 
-# Plot the maximum implausibility of the `bimodal_emulators` in the (alpha,epsilon)-plane
-emulator_plot(bimodal_emulators, plot_type = 'nimp', targets = bimodal_targets,
-              params = c('alpha', 'epsilon'))
+### End of solution ###
+
+# Plot the implausibility across both modes
+emulator_plot(bimodal_emulators, plot_type = 'nimp', targets = bimodal_targets, params = c('alpha', 'epsilon'))
+
+
+### Solution to the task on implausibility differences between modes ###
 
 # Plot the implausibility for each of the mean emulators in mode 1, in the (omega,epsilon)-plane
 emulator_plot(bimodal_emulators$mode1, plot_type = 'imp',
@@ -576,13 +588,16 @@ emulator_plot(bimodal_emulators$mode1, plot_type = 'imp',
 emulator_plot(bimodal_emulators$mode2, plot_type = 'imp',
               targets = bimodal_targets, params = c('omega', 'epsilon'))
 
+### End of solution ###
+
 # Produce three diagnostics of the mean emulators using `validation_diagnostics`
-vd <- validation_diagnostics(bimodal_emulators, bimodal_targets, bimodal_all_valid, 
+validation_subset <- subset_emulators(bimodal_emulators, c("R25", "R40", "R100", "R200"))
+vd <- validation_diagnostics(validation_subset, bimodal_targets, bimodal_all_valid, 
                              plt=TRUE, row=2)
 
 # Multiply the `sigma` by 2 for the mean emulators for mode 1 and mode 2 for I500
-bimodal_emulators$mode1$expectation$I500 <- bimodal_emulators$mode1$expectation$I500$mult_sigma(2)
-bimodal_emulators$mode2$expectation$I500 <- bimodal_emulators$mode2$expectation$I500$mult_sigma(2)
+bimodal_emulators$mode1$expectation$R200 <- bimodal_emulators$mode1$expectation$R200$mult_sigma(1.2)
+bimodal_emulators$mode2$expectation$R200 <- bimodal_emulators$mode2$expectation$R200$mult_sigma(1.2)
 
 
 # Generate new points using `generate_new_design`
