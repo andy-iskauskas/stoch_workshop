@@ -37,7 +37,7 @@ library(purrr)
 library(tidyverse)
 library(progressr)
 handlers("progress")
-set.seed(123)
+set.seed(15)
 ############################# HELPER FUNCTIONS #############################
 aggregate_points <- function(data, input_names, func = 'mean') {
   unique_points <- unique(data[,input_names])
@@ -183,7 +183,7 @@ Before starting the tutorial, you will need to run the code contained in the box
 
 ```{info, title="Code to load relevant libraries and helper functions"}
 
-``{r, eval=F}
+``{r, helper-functions, eval=F}
 library(hmer)
 library(lhs)
 library(deSolve)
@@ -407,7 +407,7 @@ In order to obtain the solutions of the stochastic SEIR model for a given set of
 
 As in [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html), the outputs obtained with the parameter set
 
-```{r}
+```{r, chosen-parameters}
 chosen_params <- c(
   b = 1/(76*365),
   mu = 1/(76*365),
@@ -424,7 +424,7 @@ will be used to define the target bounds for our calibration task.
 ```{info, title = NA, collapsible = FALSE}
 Using `get_results` on `chosen_params` 
 
-``{r, fig.height=7, fig.width=7}
+``{r, chosen-results, fig.height=7, fig.width=7}
 solution <- get_results(chosen_params, outs = c("I", "R"), 
                        times = c(25, 40, 100, 200), raw = TRUE)
 ``
@@ -434,7 +434,7 @@ we get a 3-dimensional array `solution` such that `solution[t,j,i]` contains the
 
 Plotting the results for "I" and "R", we have
 
-```{r, fig.height=7, fig.width=7}
+```{r, plotting-chosen-I, fig.height=7, fig.width=7}
 plot(0:200, ylim=c(0,700), ty="n", xlab = "Time", ylab = "Number")
 for(j in 3:4) for(i in 1:100) lines(0:200, solution[,j,i], col=(3:4)[j-2], lwd=0.3)
 legend('topleft', legend = c('Infected', "Recovered"), lty = 1, 
@@ -446,7 +446,7 @@ The plot above clearly shows the stochasticity of our model. Furthermore we can 
 
 Plotting the results for "S" also shows stochasticity:
 
-```{r, fig.height=7, fig.width=7}
+```{r, plotting-chosen-R, fig.height=7, fig.width=7}
 plot(0:200, ylim=c(0,1000), ty="n", xlab = "Time", ylab = "Number", main = "Susceptibles")
 for(i in 1:100) lines(0:200, solution[,1,i], col='black', lwd=0.3, 
                       xlab = "Time", ylab = "Number", main = "Susceptibles")
@@ -456,7 +456,7 @@ for(i in 1:100) lines(0:200, solution[,1,i], col='black', lwd=0.3,
 
 Copy the code below, modify the value of (some) parameters and run it.
 
-``{r, eval = FALSE}
+``{r, evaluation-tip, eval = FALSE}
 example_params <- c(
   b = 1/(76*365),  # birth rate
   mu = 1/(76*365),  # rate of death from other causes
@@ -490,7 +490,7 @@ If you would like, familiarise yourself with the model. Investigate how the plot
 ```{solution}
 Let us see what happens when a higher rate of infection between each infectious and susceptible person is considered. We first rerun the model on `example_params` to ensure that `solution` contains the correct trajectories:
   
-``{r, fig.height=8, fig.width=8}
+``{r, higher-beta, fig.height=8, fig.width=8}
 example_params <- c(
   b = 1/(76*365),  # birth rate
   mu = 1/(76*365),  # rate of death from other causes
@@ -525,7 +525,7 @@ legend('topleft', legend = c('Infected', "Recovered", "Infected - higher beta",
 We see that the peaks of recovered and infectious individuals have now increased, as expected. We might also note that the spread of runs has also changed: our higher $\beta$ parameter has resulted in a less variable collection of realisations, especially after time $t=50$.
 
 What happens when a lower value of the recovery rate, $\gamma$, is used?
-``{r, fig.height=8, fig.width=8}
+``{r, smaller-gamma, fig.height=8, fig.width=8}
 smaller_gamma_params <- c(
   b = 1/(60*365),
   mu = 1/(76*365),
@@ -550,7 +550,7 @@ As one expects, this causes the peak of infectious individuals to increase, whil
 
 Finally, what happens when we increase the rate at which immunity is lost, $\omega$?
   
-``{r, fig.height=8, fig.width=8}
+``{r, higher-omega, fig.height=8, fig.width=8}
 higher_omega_params <- c(
   b = 1/(60*365),
   mu = 1/(76*365),
@@ -587,7 +587,7 @@ Note that, for the sake of clarity, in this workshop we will adopt the word 'dat
 
 First of all, let us set the parameter ranges:
   
-```{r}
+```{r, define-ranges}
 ranges = list(
   b = c(1e-5, 1e-4), # birth rate
   mu = c(1e-5, 1e-4), # rate of death from other causes
@@ -603,7 +603,7 @@ ranges = list(
 
 We then turn to the targets we will match: the number of infectious individuals $I$ and the number of recovered individuals $R$ at times $t=25, 40, 100, 200$. The targets can be specified by a pair (val, sigma), where ‘val’ represents the measured value of the output and ‘sigma’ represents its standard deviation, or by a pair (min, max), where min represents the lower bound and max the upper bound for the target. Since in [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html) we used the former formulation, here we will show the latter: 
   
-```{r}
+```{r, set-targets-stoch}
 targets <- list(
   I25 = c(98.51, 133.25),
   I40 = c(117.17, 158.51),
@@ -620,7 +620,7 @@ The 'sigmas' in our `targets` list represent the uncertainty we have about the o
 
 For this workshop, we generate parameter sets using a [Latin Hypercube](https://en.wikipedia.org/wiki/Latin_hypercube_sampling) design. A rule of thumb is to select at least $10p$ parameter sets to train emulators, where $p$ is the number of parameters (9 in this workshop). Using the function `maximinLHS` in the package `lhs`, we create a hypercube design with 100 parameter sets for the training set and one with 50 parameter sets for the validation set. Note that we could have chosen $100$ parameter sets for the validation set: we chose $50$ simply to highlight that it is not necessary to have as many validation points as training points. Especially when working with expensive models, this can be useful and can help us manage the computational burden of the procedure. After creating the two hypercube designs, we bind them together to create `initial_LHS`:
 
-```{r}
+```{r, create-lhs}
 initial_LHS_training <- maximinLHS(100, 9)
 initial_LHS_validation <- maximinLHS(50, 9)
 initial_LHS <- rbind(initial_LHS_training, initial_LHS_validation)
@@ -628,7 +628,7 @@ initial_LHS <- rbind(initial_LHS_training, initial_LHS_validation)
 
 Note that in `initial_LHS` each parameter is distributed on $[0,1]$. This is not exactly what we need, since each parameter has a different range. We therefore re-scale each component in `initial_LHS` multiplying it by the difference between the upper and lower bounds of the range of the corresponding parameter and then we add the lower bound for that parameter. In this way we obtain `initial_points`, which contains parameter values in the correct ranges. 
 
-```{r}
+```{r, make-initial-points}
 initial_points <- setNames(data.frame(t(apply(initial_LHS, 1, 
                                         function(x) x * purrr::map_dbl(ranges, diff) + 
                                         purrr::map_dbl(ranges, ~.[[1]])))), names(ranges))
@@ -636,7 +636,7 @@ initial_points <- setNames(data.frame(t(apply(initial_LHS, 1,
 
 We then run the model for the parameter sets in `initial_points` through the `get_results` function, specifying that we are interested in the outputs for $I$ and $R$ at times $t=25, 40, 100, 200$. Note that we use the `progressr` package to create a progress bar that updates every time a new parameter set is run: when you run the code on your own, this will indicate at what stage of the process you are. 
 
-```{r}
+```{r, get-initial-results}
 initial_results <- list()
 with_progress({
   p <- progressor(nrow(initial_points))
@@ -651,7 +651,7 @@ for (i in 1:nrow(initial_points)) {
 
 Note that `initial_results` is a list of length $3750$, since it has a row for each of the 25 repetitions of the 150 parameter sets in `initial_points`.  Finally, we bind all elements in `initial_results`  to obtain a data frame `wave0 ` and we split it in two parts: the first 2500 elements (corresponding to the first 100 parameter sets) for the training set, `all_training`, and the last 1250 for the validation set (corresponding to the last 50 parameter sets), `all_valid`.
 
-```{r}
+```{r, create-wave0-stoch}
 wave0 <- data.frame(do.call('rbind', initial_results))
 all_training <- wave0[1:2500,]
 all_valid <- wave0[2501:3750,]
@@ -699,7 +699,7 @@ In the deterministic workshop, we said that in order to train an emulator, the `
 ```{info, title = NA, collapsible = FALSE}
 To train stochastic emulators we use the function `emulator_from_data` specifying `emulator_type = 'variance'`, which requires the training data, the names of the outputs to emulate, and the ranges of the parameters:
 
-``{r, fig.height=7, fig.width=7}
+``{r, make-stoch-emulators, fig.height=7, fig.width=7}
 stoch_emulators <- emulator_from_data(all_training, output_names, ranges, 
                                       emulator_type = 'variance')
 ``
@@ -717,7 +717,7 @@ The function `emulator_from_data` with `emulator_type = 'variance'` returns two 
 
 Let's take a look at the two sets of emulators stored in `stoch_emulators`, starting with plots of active variables:
 
-```{r, fig.height=5, fig.width=6}
+```{r, plot-actives-stoch, fig.height=5, fig.width=6}
 plot_actives(stoch_emulators$variance)
 plot_actives(stoch_emulators$expectation)
 ```
@@ -731,7 +731,7 @@ As in the deterministic case, the `emulator_plot` can be used to visualise how e
 ```{info, title = NA, collapsible = FALSE}
 It is important to stress the following point: unlike in the deterministic case, here mean emulators do not have zero variance at  'known' points, i.e., at points in the training set. Let us verify this, by plotting the variance of the mean emulator for $I100$ in the $(\epsilon,\alpha)$-plane, with all unshown parameters to be as in the first row of `all_training`. Note that since the plot produced below depends on the location of the first run, when running the code with your own `all_training` you will get a different result:
 
-``{r, fig.height=7, fig.width=9}
+``{r, plot-stoch-ems, fig.height=7, fig.width=9}
 emulator_plot(stoch_emulators$expectation$I100, params = c('epsilon', 'alpha'),
      fixed_vals = all_training[1, names(ranges)[-c(6,7)]], plot_type = 'var') +
    geom_point(data = all_training[1,], aes(x = epsilon, y = alpha))
@@ -763,7 +763,7 @@ A very large value of $\text{Imp}(x)$ means that we can be confident that the pa
 
 To plot the maximum implausibility (across all emulators), we set `plot_type` to `nimp` in the call to `emulator_plot`:
 
-```{r, fig.height=7, fig.width=9}
+```{r, plot-stoch-nimp, fig.height=7, fig.width=9}
 emulator_plot(stoch_emulators, plot_type = 'nimp', 
               targets = targets, params = c('epsilon', 'alpha'))
 ```
@@ -774,7 +774,7 @@ Use the argument `fixed_vals` to set the parameters that are not shown in the pl
 
 ```{solution}
 We set `fixed_vals` to `chosen_params[!names(chosen_params) %in% c('epsilon', 'alpha')]`, plot the maximum implausibility and add a point corresponding to the values of $\sigma$ and $alpha$ in `chosen_params`:
-``{r fig.width = 7, fig.height = 6}
+``{r, imp-on-chosen, fig.width = 7, fig.height = 6}
 emulator_plot(stoch_emulators, plot_type = 'nimp', targets = targets,
               params = c('epsilon', 'alpha'),
               fixed_vals = chosen_params[!names(chosen_params) %in% c('epsilon', 'alpha')], 
@@ -808,7 +808,7 @@ Finally, **the third column** gives the standardised errors of the emulator outp
 
 We call `validation_diagnostics` passing it the mean emulators, the list of targets, and the validation set:
 
-```{r,  fig.height=6, fig.width=8}
+```{r, validation-diag-stoch,  fig.height=6, fig.width=8}
 vd <- validation_diagnostics(stoch_emulators$expectation, targets, all_valid, plt=TRUE, row=2)
 ```
 
@@ -826,7 +826,7 @@ It is possible to automate the validation process. If we have a list of trained 
 
 The code below implements this approach:
 
-```{r, eval = F}
+```{r, auto-misclass, eval = F}
 for (j in 1:length(ems)) {
       misclass <- nrow(classification_diag(ems$expectation[[j]], targets, validation, plt = FALSE))
       while(misclass > 0) {
@@ -840,7 +840,7 @@ The step above helps us ensure that our emulators are not overconfident and do n
 
 Once misclassifications have been eliminated, the second step is to ensure that the emulators’ predictions agree, within tolerance given by their uncertainty, with the simulator output. We can check how many validation points fail the first of the diagnostics (left column in plot above) with the function `comparison_diag`, and discard an emulator if it produces too many failures. The code below implements this, removing emulators for which more than 10% of validation points do not pass the first diagnostic:
 
-```{r, eval=F}
+```{r, remove-bad-ems, eval=F}
 bad.ems <- c()
 for (j in 1:length(ems)) {
           bad.model <- nrow(comparison_diag(ems$expectation[[j]], targets, validation, plt = FALSE))
@@ -859,13 +859,13 @@ A video presentation of this section can be found [here](https://www.youtube.com
 
 To generate a set of non-implausible points, based on the trained emulators, we use the function `generate_new_design`, exactly as in the deterministic case: 
 
-```{r}
+```{r, gen-new-points-stoch}
 new_points <- generate_new_design(stoch_emulators, 150, targets)
 ```
 
 Here we generated $150$ points, since we are going to use $100$ of them to train new emulators and $50$ of them to validate new emulators (as done in the first wave). We can visualise the non-implausible space at the end of this first wave using `plot_wrap`:
 
-```{r,  fig.height=8, fig.width=8}
+```{r, plot-new-points,  fig.height=8, fig.width=8}
 plot_wrap(new_points, ranges)
 ```
 
@@ -891,7 +891,7 @@ It is often a good strategy to increase the number of repetitions used at each w
 
 Using this principle, we run the model $50$ times on each parameter set in `new_points` (for the first wave we used $25$ repetitions). We then bind all results to create a dataframe `wave1` and we split this into two subsets, `new_all_training` to train the new emulators and `new_all_valid` to validate them. We select the first 5000 rows (corresponding to the first 100 parameter sets in `new_points`) for the training data and the last 2500 (corresponding to the last 50 parameter sets in `new_points`) for the validation data.
 
-```{r}
+```{r, get-new-results-stoch}
 new_results <- list()
 with_progress({
   p <- progressor(nrow(initial_points))
@@ -909,7 +909,7 @@ new_all_valid <- wave1[5001:7500,]
 
 To train new emulators we use `emulator_from_data`, passing the new training data, the outputs names and the initial ranges of the parameters. We also set `check.ranges` to `TRUE` to ensure that the new emulators are trained only on the non-implausible region found in wave one, and `emulator_type = ‘variance’` to indicate that we want to train stochastic emulators. 
 
-```{r}
+```{r, train-new-stoch}
 new_stoch_emulators <- emulator_from_data(new_all_training, output_names, ranges, 
                                           check.ranges=TRUE, emulator_type = 'variance')
 ```
@@ -917,19 +917,19 @@ new_stoch_emulators <- emulator_from_data(new_all_training, output_names, ranges
 
 As usual, before using the obtained emulators, we need to check their diagnostics. We use the function `validation_diagnostics` which takes the new emulators, the targets and the new validation data:
 
-```{r, fig.height=6, fig.width=8}
+```{r, validation-diag-stoch2, fig.height=6, fig.width=8}
 vd <- validation_diagnostics(new_stoch_emulators, targets, new_all_valid, plt=TRUE, row=2)
 ```
 
 Since these diagnostics look good, we can generate new non-implausible points. Here is the second caveat: we now need to pass both `new_stoch_emulators` and `stoch_emulators` to the `generate_new_design` function, since a point needs to be non-implausible for all emulators trained so far, and not just for emulators trained in the current wave:
 
-```{r}
+```{r, gen-new-new-points-stoch}
 new_new_points <- generate_new_design(c(new_stoch_emulators, stoch_emulators), 150, targets)
 ```
 
 Below we run the model on the points provided by the second wave of history matching:
 
-```{r}
+```{r, get-new-new-results-stoch}
 new_new_results <- list()
 with_progress({
   p <- progressor(nrow(initial_points))
@@ -953,7 +953,7 @@ In this last section we present three visualisations that can be used to compare
 
 The first visualisation, obtained through the function `wave_points`, shows the marginal distributions of the non-implausible space for the waves of interest. For example, let us plot the distribution of five of the parameter sets at the beginning, at the end of wave one and at the end of wave two:
 
-```{r,  fig.height=8, fig.width=8}
+```{r, viz-wave-points,  fig.height=8, fig.width=8}
 wave_points(list(initial_points, new_points, new_new_points), 
             input_names = names(ranges)[c(2,3,6,8,9)]) +
             ggplot2::theme(axis.text.x = ggplot2::element_text(size = 6))
@@ -967,7 +967,7 @@ The second visualisation allows us to assess how much better parameter sets at l
 ```{info, title = NA, collapsible = FALSE}
 In this workshop we assume that for a given parameter set $x$, we are interested in matching the mean of the stochastic model to the observed data, rather than in the output of each realisation at $x$, which will be dealt with in future versions. For this reason, we will use the helper function `aggregate_points`, which calculates the mean of each output across different realisations. 
 
-``{r,  fig.height=8, fig.width=8}
+``{r, aggregate-points, fig.height=8, fig.width=8}
 all_training_aggregated <- aggregate_points(all_training, names(ranges))
 new_all_training_aggregated <- aggregate_points(new_all_training, names(ranges))
 new_new_all_training_aggregated <- aggregate_points(new_new_all_training, names(ranges))
@@ -977,7 +977,7 @@ all_aggregated <- list(all_training_aggregated, new_all_training_aggregated,
 
 We are now ready to compare the performance of parameter sets at the end of each wave, passing the list `all_aggregated` and the list `targets` to the function `simulator_plot`:
 
-``{r,  fig.height=8, fig.width=8}
+``{r, sim-plot-agg, fig.height=8, fig.width=8}
 simulator_plot(all_aggregated, targets, barcol = "grey")
 ``
 ```
@@ -986,7 +986,7 @@ Note that in this call we set `barcol="grey"` in order to have the target interv
 
 In the third visualisation, output values for non-implausible parameter sets at each wave are shown for each combination of two outputs:
 
-```{r,  fig.height=8, fig.width=8}
+```{r, viz-wave-values, fig.height=8, fig.width=8}
 wave_values(all_aggregated, targets, l_wid=1) 
 ```
 
@@ -1006,7 +1006,7 @@ A video presentation of this section can be found [here](https://www.youtube.com
 
 In the previous sections of this workshop we dealt with stochasticity, but not with 'bimodality', when one can perform multiple repetitions at a given parameter set and find two distinct classes of behaviour. This is because our SEIRS model did not show any bimodal behaviour in the outputs for the times considered, i.e. for $t$ up to $200$. Let us suppose now that we are interested also in later times. Running the model on `chosen_params` using `get_results` up to time $t=500$ and plotting the results for "I" and "R" we obtain:
 
-```{r, fig.height=7, fig.width=7}
+```{r, chosen-bimodal, fig.height=7, fig.width=7}
 solution <- get_results(chosen_params, outs = c("I", "R"), 
                         times = c(25, 40, 100, 200, 300, 400, 500), raw = TRUE)
 plot(0:500, ylim=c(0,700), ty="n", xlab = "Time", ylab = "Number")
@@ -1020,7 +1020,7 @@ The most common example of bimodality, ‘take off vs die out’, now enters the
 ```{task}
 Investigate how different parameter sets give rise to different levels of bimodality. 
 
-``{info, title = "R tip", collapsible = TRUE, ref.label = "rtip1"}
+``{info, title = "R tip", collapsible = TRUE, ref.label = "rtip2"}
 ``
 
 ```
@@ -1029,7 +1029,7 @@ Investigate how different parameter sets give rise to different levels of bimoda
 ```{solution}
 Let us see what happens when we simulate a higher rate of infection between each infectious and susceptible:
 
-``{r, fig.height=8, fig.width=8}
+``{r, bimod-higher-beta, fig.height=8, fig.width=8}
 higher_beta_params <- c(
   b = 1/(76*365),
   mu = 1/(76*365),
@@ -1063,7 +1063,7 @@ Similar to the philosophy of the previous sections, we will match the observed d
 
 While the parameters' ranges are the same as before, we need to redefine the targets' list, adding values for times later than $t=200$:
 
-```{r}
+```{r, set-bimod-targets}
 bimodal_targets <- list(
   I25 = list(val = 115.88, sigma = 5.79),
   I40 = list(val = 137.84, sigma = 6.89),
@@ -1084,34 +1084,24 @@ bimodal_targets <- list(
 
 Note that these are the same exact targets chosen for the deterministic workshop, [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html).
 
-Since we are now interested in times after $t=200$ too, we need to rerun the parameter sets in `initial_points`, obtaining `bimodal_initial_results`. We then bind all elements in `bimodal_initial_results` to obtain a dataframe `bimodal_wave0`, which we split into a training and a validation set:
+In principle, we now need to run the parameter sets in `initial_points` to include times larger than $t=200$, to obtain our training data. Due to the comparative slowness of the model, in particular since we need to run multiple repetitions at each parameter combination, we have pre-run this to obtain `bimodal_wave0`, a data.frame consisting of $7500$ realisations: $50$ per point for each of the $150$ points in our initial ensemble. To obtain a similar data.frame, one could use the code in Section 4 but modifying the `times` argument to be the numeric vector `c(25, 40, 100, 200, 250, 400, 500)`.
 
+```{r, import-bimod-points}
 
-```{r}
-bimodal_initial_results <- list()
-with_progress({
-  p <- progressor(nrow(initial_points))
-for (i in 1:nrow(initial_points)) {
-  model_out <- get_results(unlist(initial_points[i,]), nreps = 50, outs = c("I", "R"), 
-                           times = c(25, 40, 100, 200, 250, 400, 500))
-  bimodal_initial_results[[i]] <- model_out
-  p(message = sprintf("Run %g", i))
-}
-})
-bimodal_wave0 <- data.frame(do.call('rbind', bimodal_initial_results))
+bimodal_wave0 <- read.csv(url("https://maths.dur.ac.uk/users/andrew.iskauskas/Resources/bimodal_data.csv"))
 bimodal_all_training <- bimodal_wave0[1:5000,]
 bimodal_all_valid <- bimodal_wave0[5001:7500,]
-bimodal_output_names <- c("I25", "I40", "I100", "I200", "I250", "I400", "I500", 
+bimodal_output_names <- c("I25", "I40", "I100", "I200", "I250", "I400", "I500",
                           "R25", "R40", "R100", "R200", "R250", "R400", "R500")
-```
 
+```
 
 ## Bimodal Emulators
 
 ```{info, title = NA, collapsible = FALSE}
 To train bimodal emulators we use the function `emulator_from_data` specifying `emulator_type = 'multistate'`, which requires the training data, the names of the outputs to emulate, and the ranges of the parameters:
 
-``{r, fig.height=7, fig.width=7}
+``{r, train-bimod-ems, fig.height=7, fig.width=7}
 bimodal_emulators <- emulator_from_data(bimodal_all_training, 
                                         bimodal_output_names, ranges,
                                         emulator_type = 'multistate')
@@ -1129,24 +1119,24 @@ Behind the scenes, this function does the following:
 
 Let us now plot the expectation of the mean emulator of $R400$ for each mode fixing all non-shown parameters to their values in `chosen_params`: 
 
-``{r, fig.height=7, fig.width=9}
-emulator_plot(bimodal_emulators$mode1$expectation$R400, params = c('mu', 'alpha'), 
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('mu', 'alpha')])
-emulator_plot(bimodal_emulators$mode2$expectation$R400, params = c('mu', 'alpha'), 
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('mu', 'alpha')])
+``{r, plot-bimod-output, fig.height=7, fig.width=9}
+emulator_plot(bimodal_emulators$mode1$expectation$R400, params = c('alpha', 'epsilon'), 
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha', 'epsilon')])
+emulator_plot(bimodal_emulators$mode2$expectation$R400, params = c('alpha', 'epsilon'), 
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha', 'epsilon')])
 ``
 
-We notice that mode 2 tends to contain higher values than mode 1. This indicates that mode 1 is the one where the infection dies out.
+We notice that, while mode 1 is more variable, mode 2 tends to contain higher values than mode 1. This indicates that mode 1 is the one where the infection is liable to die out.
 
 It is also instructive to plot the expectation of the proportion emulator. We use the argument `fixed_vals` to set the parameters that are not shown in the plot to be as in `chosen_params`:
   
-``{r, fig.height=7, fig.width=9}
-emulator_plot(bimodal_emulators$prop, params = c('alpha', 'epsilon'), 
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha' ,'epsilon')]) +
-              geom_point(aes(x=1/7, y=1/50), size=3)
+``{r, plot-bimod-prop, fig.height=7, fig.width=9}
+emulator_plot(bimodal_emulators$prop, params = c('beta1', 'mu'), 
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('beta1' ,'mu')]) +
+              geom_point(data = data.frame(beta1 = 0.214, mu = 1/27740), aes(x=mu, y=beta1), size=3)
 ``
 
-The plot shows that the proportion of points in mode 1, where the infection dies out, is around 0.58. This is in accordance with the plot produced at the beginning of this section, where the infection died out on the majority of trajectories.
+The plot shows that the proportion of points in mode 1, where the infection dies out, is around 0.55. This is in accordance with the plot produced at the beginning of this section, where the infection died out on a slim majority of trajectories.
 ```
 
 
@@ -1176,19 +1166,26 @@ knitr::include_graphics('Bimodality_detection.png')
 
 
 ```{task}
-Confirm that mode 1 is where the infection dies out by comparing the plots of the expectation of the mean emulator for $I400$ for both modes.
+Confirm that mode 1 is where the infection dies out by comparing the predictions of the mean emulators for each mode.
 ```
 
 
 ```{solution}
-We use `emulator_plot` to produce the suggested plots:
+We could use `emulator_plot` to perform this, looking at different slices, but it may be more instructive to consider the emulator predictions across all emulated outputs. We use the `chosen_params` as a data.frame and predict on both modes, combining the predictions using some base R plotting.
 
-``{r, fig.height=8, fig.width=8}
-emulator_plot(bimodal_emulators$mode1$expectation$I400, params = c('mu', 'alpha'))
-emulator_plot(bimodal_emulators$mode2$expectation$I400, params = c('mu', 'alpha'))
+``{r, plot-modes, fig.height = 8, fig.width = 8}
+
+chosen_data_frame <- data.frame(t(chosen_params))
+mode1_preds <- purrr::map_dbl(bimodal_emulators$mode1$expectation, ~.$get_exp(chosen_data_frame))
+mode2_preds <- purrr::map_dbl(bimodal_emulators$mode2$expectation, ~.$get_exp(chosen_data_frame))
+plot(mode1_preds, type = 'l', xaxt = "n", xlab = "Output", ylab = "Number")
+axis(1, at = seq_len(length(bimodal_output_names)), labels = bimodal_output_names)
+lines(mode2_preds, col = "blue")
+legend('topleft', inset = 0.05, legend = c("Mode 1", "Mode 2"), lty = 1, col = c('black', 'blue'))
+
 ``
 
-The values in the plot for mode 1 are lower than those for mode 2: this reflects the fact that mode 2 experiences a second wave around $t=300$, while in mode 1 the infection dies out after the first wave (around $t=40$). 
+The difference in numbers of infected is small, but appreciable; that of the recovered compartments clearly show the second peak of the disease in the second mode.
 ```
 
 ## Implausibility 
@@ -1199,7 +1196,7 @@ Since we are now in a bimodal setting, we want to regard a point as non-implausi
 
 For a given output and a given point, the implausibility for mode 1 and the implausibility for mode 2 are calculated, and the minimum of them is taken. The maximum (or second-maximum, third-maximum etc) of this collection of minimised implausibilities is then selected, depending on the user choice. For example, to plot the maximum of these minimised implausibilities, we set `plot_type` to `nimp`:
 
-``{r, fig.height=7, fig.width=9}
+``{r, bimod-implaus, fig.height=7, fig.width=9}
 emulator_plot(bimodal_emulators, plot_type = 'nimp', targets = bimodal_targets, 
               params = c('alpha', 'epsilon'))
 ``
@@ -1211,44 +1208,47 @@ Set the argument `plot_type` to `imp` to produce implausibility plots for each o
 ```
 
 ```{solution}
-Setting `plot_type='imp'` in `emulator_plot` and passing it either `subset_emulators(bimodal_emulators, output_names[-c(7,14)])$mode1` or `subset_emulators(bimodal_emulators, output_names[-c(7,14)])$mode2`, we get:
+Setting `plot_type='imp'` in `emulator_plot`, we obtain a collection of plots:
 
-``{r fig.width = 7, fig.height = 6}
+``{r, bimod-imp-compare, fig.width = 7, fig.height = 6}
 emulator_plot(bimodal_emulators$mode1, plot_type = 'imp', 
               targets = bimodal_targets, params = c('omega', 'epsilon'))
 emulator_plot(bimodal_emulators$mode2, plot_type = 'imp', 
               targets = bimodal_targets, params = c('omega', 'epsilon'))
 ``
-The implausibility plots are the same between modes for early times ($t=25,40,100$) and different between modes for later outputs. This makes sense, since bimodality, which enters the picture after the first wave, does not play a role in earlier times. 
+The implausibility plots are broadly the same between modes for early times ($t=25,40,100$) and different between modes for later outputs. This makes sense, since bimodality, which enters the picture after the first wave, should not play a significant role in earlier times. 
 ```
 
 
 ## Emulator diagnostics
 
-As before, the function `validation_diagnostics` can be used to get three diagnostics for each emulated output. For example, to produce diagnostics for the first four emulators we type:
+As before, the function `validation_diagnostics` can be used to get three diagnostics for each emulated output. For example, to produce diagnostics for the first four emulators of the number of recovered individuals we type:
 
-```{r,  fig.height=6, fig.width=8}
-vd <- validation_diagnostics(bimodal_emulators, bimodal_targets, bimodal_all_valid, 
+```{r, bimod-validation, fig.height=6, fig.width=8}
+validation_subset <- subset_emulators(bimodal_emulators, c("R25", "R40", "R100", "R200"))
+vd <- validation_diagnostics(validation_subset, bimodal_targets, bimodal_all_valid, 
                              plt=TRUE, row=2)
 ```
+
+Note that, in order to restrict to a subset of the emulated outputs, we use the `subset_emulators` function. This ensures that the requisite outputs are selected while maintaining the structure of the emulator lists (i.e. we still have modes 1 and 2, expectation, variance, etc).
 
 ```{info, title = NA, collapsible = FALSE}
 
 You may have noticed that in the first column we have more points plotted than we have validation points. This is because we do diagnostics for each mode for each output, i.e. we compare the predictions of the mean emulators for mode 1 and mode 2 with the model output values, which are also clustered in two subsets, due to bimodality.
 ```
 
-As in the deterministic case, one can enlarge the $\sigma$ values to obtain more conservative emulators, if needed. For example,  to double the $\sigma$ value for the mean emulators for $I500$ in both modes we would type:
+As in the deterministic case, one can enlarge the $\sigma$ values to obtain more conservative emulators, if needed. For example,  to increase the $\sigma$ value slightly for the mean emulators for $R200$ in both modes we would type:
 
-```{r}
-bimodal_emulators$mode1$expectation$I500 <- bimodal_emulators$mode1$expectation$I500$mult_sigma(2)
-bimodal_emulators$mode2$expectation$I500 <- bimodal_emulators$mode2$expectation$I500$mult_sigma(2)
+```{r, modify-bimod-ems}
+bimodal_emulators$mode1$expectation$R200 <- bimodal_emulators$mode1$expectation$R200$mult_sigma(1.2)
+bimodal_emulators$mode2$expectation$R200 <- bimodal_emulators$mode2$expectation$R200$mult_sigma(1.2)
 ```
 
 ## Proposing new points
 
-Generating a set of non-implausible points, based on the trained emulators, is done in exactly the same way as it was in Section \@ref(propnewpoints), using the function `generate_new_design`. In this case we need to use the function `subset_emulators` to remove the emulators for the outputs at $t=450$ (the seventh and fourteenth emulators), for which we did not set targets: 
+Generating a set of non-implausible points, based on the trained emulators, is done in exactly the same way as it was in Section \@ref(propnewpoints), using the function `generate_new_design`.
 
-```{r}
+```{r, gen-new-bimod}
 new_points <- generate_new_design(bimodal_emulators, 150, bimodal_targets, nth=1)
 ```
 

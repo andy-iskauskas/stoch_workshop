@@ -307,21 +307,21 @@ we get a 3-dimensional array <code>solution</code> such that <code>solution[t,j,
 <span id="cb4-2"><a href="intro.html#cb4-2" tabindex="-1"></a><span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>) <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>) <span class="fu">lines</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">200</span>, solution[,j,i], <span class="at">col=</span>(<span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>)[j<span class="dv">-2</span>], <span class="at">lwd=</span><span class="fl">0.3</span>)</span>
 <span id="cb4-3"><a href="intro.html#cb4-3" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">&#39;topleft&#39;</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">&#39;Infected&#39;</span>, <span class="st">&quot;Recovered&quot;</span>), <span class="at">lty =</span> <span class="dv">1</span>, </span>
 <span id="cb4-4"><a href="intro.html#cb4-4" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>), <span class="at">inset =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.05</span>))</span></code></pre></div>
-<p><img src="_main_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" /></p>
+<p><img src="_main_files/figure-html/plotting-chosen-I-1.png" style="display: block; margin: auto;" /></p>
 <p>The plot above clearly shows the stochasticity of our model. Furthermore we can also appreciate how the spread of the runs varies across the time: for example, the variance in the number of infected individuals is largest around <span class="math inline">\(t=40\)</span> and quite small at later times.</p>
 <p>Plotting the results for “S” also shows stochasticity:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="intro.html#cb5-1" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">200</span>, <span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1000</span>), <span class="at">ty=</span><span class="st">&quot;n&quot;</span>, <span class="at">xlab =</span> <span class="st">&quot;Time&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;Number&quot;</span>, <span class="at">main =</span> <span class="st">&quot;Susceptibles&quot;</span>)</span>
 <span id="cb5-2"><a href="intro.html#cb5-2" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>) <span class="fu">lines</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">200</span>, solution[,<span class="dv">1</span>,i], <span class="at">col=</span><span class="st">&#39;black&#39;</span>, <span class="at">lwd=</span><span class="fl">0.3</span>, </span>
 <span id="cb5-3"><a href="intro.html#cb5-3" tabindex="-1"></a>                      <span class="at">xlab =</span> <span class="st">&quot;Time&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;Number&quot;</span>, <span class="at">main =</span> <span class="st">&quot;Susceptibles&quot;</span>)</span></code></pre></div>
-<p><img src="_main_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" /></p>
+<p><img src="_main_files/figure-html/plotting-chosen-R-1.png" style="display: block; margin: auto;" /></p>
 <div class="panel panel-default">
 <div class="panel-heading">
 Task
 </div>
 <div class="panel-body">
 <p>If you would like, familiarise yourself with the model. Investigate how the plots change as you change the values of the parameters.</p>
-<p><infobutton id="displayTextunnamed-chunk-88" onclick="javascript:toggle('unnamed-chunk-88');">Show: R tip</infobutton></p>
-<div id="toggleTextunnamed-chunk-88" style="display: none">
+<p><infobutton id="displayTextunnamed-chunk-57" onclick="javascript:toggle('unnamed-chunk-57');">Show: R tip</infobutton></p>
+<div id="toggleTextunnamed-chunk-57" style="display: none">
 <div class="panel panel-default">
 <div class="panel-body">
 <p>Copy the code below, modify the value of (some) parameters and run it.</p>
@@ -345,10 +345,10 @@ Task
 </div>
 </div>
 </div>
-<button id="displayTextunnamed-chunk-14" onclick="javascript:toggle(&#39;unnamed-chunk-14&#39;);">
+<button id="displayTextunnamed-chunk-11" onclick="javascript:toggle(&#39;unnamed-chunk-11&#39;);">
 Show: Solution
 </button>
-<div id="toggleTextunnamed-chunk-14" style="display: none">
+<div id="toggleTextunnamed-chunk-11" style="display: none">
 <div class="panel panel-default">
 <div class="panel-heading panel-heading1">
 Solution
@@ -384,7 +384,7 @@ Solution
 <span id="cb7-27"><a href="intro.html#cb7-27" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">&#39;topleft&#39;</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">&#39;Infected&#39;</span>, <span class="st">&quot;Recovered&quot;</span>, <span class="st">&quot;Infected - higher beta&quot;</span>, </span>
 <span id="cb7-28"><a href="intro.html#cb7-28" tabindex="-1"></a>                             <span class="st">&quot;New Recovered - higher beta&quot;</span>), <span class="at">lty =</span> <span class="dv">1</span>, </span>
 <span id="cb7-29"><a href="intro.html#cb7-29" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="st">&quot;#E69F00&quot;</span>,<span class="st">&quot;#CC79A7&quot;</span>), <span class="at">inset =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>))</span></code></pre></div>
-<p><img src="_main_files/figure-html/unnamed-chunk-95-1.png" style="display: block; margin: auto;" /></p>
+<p><img src="_main_files/figure-html/higher-beta-1.png" style="display: block; margin: auto;" /></p>
 <p>We see that the peaks of recovered and infectious individuals have now increased, as expected. We might also note that the spread of runs has also changed: our higher <span class="math inline">\(\beta\)</span> parameter has resulted in a less variable collection of realisations, especially after time <span class="math inline">\(t=50\)</span>.</p>
 <p>What happens when a lower value of the recovery rate, <span class="math inline">\(\gamma\)</span>, is used?</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="intro.html#cb8-1" tabindex="-1"></a>smaller_gamma_params <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
@@ -405,7 +405,7 @@ Solution
 <span id="cb8-16"><a href="intro.html#cb8-16" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">&#39;topleft&#39;</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">&#39;Infected&#39;</span>, <span class="st">&quot;Recovered&quot;</span>, <span class="st">&quot;Infected - smaller gamma&quot;</span>, </span>
 <span id="cb8-17"><a href="intro.html#cb8-17" tabindex="-1"></a>                             <span class="st">&quot;Recovered - smaller gamma&quot;</span>), <span class="at">lty =</span> <span class="dv">1</span>, </span>
 <span id="cb8-18"><a href="intro.html#cb8-18" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="st">&quot;#E69F00&quot;</span>,<span class="st">&quot;#CC79A7&quot;</span>), <span class="at">inset =</span> <span class="fu">c</span>(<span class="fl">0.01</span>, <span class="fl">0.01</span>))</span></code></pre></div>
-<p><img src="_main_files/figure-html/unnamed-chunk-96-1.png" style="display: block; margin: auto;" /></p>
+<p><img src="_main_files/figure-html/smaller-gamma-1.png" style="display: block; margin: auto;" /></p>
 <p>As one expects, this causes the peak of infectious individuals to increase, while the variability of runs does not appreciably change.</p>
 <p>Finally, what happens when we increase the rate at which immunity is lost, <span class="math inline">\(\omega\)</span>?</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="intro.html#cb9-1" tabindex="-1"></a>higher_omega_params <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
@@ -426,7 +426,7 @@ Solution
 <span id="cb9-16"><a href="intro.html#cb9-16" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">&#39;topleft&#39;</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">&#39;Infected&#39;</span>, <span class="st">&quot;Recovered&quot;</span>, <span class="st">&quot;Infected - higher omega&quot;</span>, </span>
 <span id="cb9-17"><a href="intro.html#cb9-17" tabindex="-1"></a>                             <span class="st">&quot;Recovered - higher omega&quot;</span>), <span class="at">lty =</span> <span class="dv">1</span>, </span>
 <span id="cb9-18"><a href="intro.html#cb9-18" tabindex="-1"></a>       <span class="at">col =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="st">&quot;#E69F00&quot;</span>,<span class="st">&quot;#CC79A7&quot;</span>), <span class="at">inset =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.05</span>))</span></code></pre></div>
-<p><img src="_main_files/figure-html/unnamed-chunk-97-1.png" style="display: block; margin: auto;" /></p>
+<p><img src="_main_files/figure-html/higher-omega-1.png" style="display: block; margin: auto;" /></p>
 <p>This causes the peak of recovered individuals to slightly decrease; however, the decrease in peak is not so substantial as to have this change outweigh the effect of stochasticity.</p>
 The three examples above give an indication of the importance of considering stochasticity: even where there are appreciable changes in behaviour that align with our physical intuition about the disease, their effects may not be as clear-cut as we would expect. Furthermore, the amount of variability as well as the model output can be different at different parts of parameter space. When matching to such a model, we must therefore be cogniscent of these two aspects.
 </div>
