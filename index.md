@@ -308,7 +308,7 @@ legend('topleft', legend = c('Infected', "Recovered"), lty = 1,
        col = c(3,4), inset = c(0.05, 0.05))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plotting-chosen-I-1.png" style="display: block; margin: auto;" />
 
 The plot above clearly shows the stochasticity of our model. Furthermore we can also appreciate how the spread of the runs varies across the time: for example, the variance in the number of infected individuals is largest around $t=40$ and quite small at later times.
 
@@ -322,7 +322,7 @@ for(i in 1:100) lines(0:200, solution[,1,i], col='black', lwd=0.3,
                       xlab = "Time", ylab = "Number", main = "Susceptibles")
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plotting-chosen-R-1.png" style="display: block; margin: auto;" />
 
 
 
@@ -331,9 +331,9 @@ for(i in 1:100) lines(0:200, solution[,1,i], col='black', lwd=0.3,
 
 If you would like, familiarise yourself with the model. Investigate how the plots change as you change the values of the parameters.
 
-<infobutton id="displayTextunnamed-chunk-88" onclick="javascript:toggle('unnamed-chunk-88');">Show: R tip</infobutton>
+<infobutton id="displayTextunnamed-chunk-57" onclick="javascript:toggle('unnamed-chunk-57');">Show: R tip</infobutton>
 
-<div id="toggleTextunnamed-chunk-88" style="display: none"><div class="panel panel-default"><div class="panel-body">
+<div id="toggleTextunnamed-chunk-57" style="display: none"><div class="panel panel-default"><div class="panel-body">
 
 Copy the code below, modify the value of (some) parameters and run it.
 
@@ -358,9 +358,9 @@ legend('topleft', legend = c('Infected', "Recovered"), lty = 1,
  </div></div>
 
 
-<button id="displayTextunnamed-chunk-14" onclick="javascript:toggle('unnamed-chunk-14');">Show: Solution</button>
+<button id="displayTextunnamed-chunk-11" onclick="javascript:toggle('unnamed-chunk-11');">Show: Solution</button>
 
-<div id="toggleTextunnamed-chunk-14" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
+<div id="toggleTextunnamed-chunk-11" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
 Let us see what happens when a higher rate of infection between each infectious and susceptible person is considered. We first rerun the model on `example_params` to ensure that `solution` contains the correct trajectories:
   
 
@@ -396,7 +396,7 @@ legend('topleft', legend = c('Infected', "Recovered", "Infected - higher beta",
        col = c(3,4,"#E69F00","#CC79A7"), inset = c(0.01, 0.01))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-95-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/higher-beta-1.png" style="display: block; margin: auto;" />
 
 We see that the peaks of recovered and infectious individuals have now increased, as expected. We might also note that the spread of runs has also changed: our higher $\beta$ parameter has resulted in a less variable collection of realisations, especially after time $t=50$.
 
@@ -423,7 +423,7 @@ legend('topleft', legend = c('Infected', "Recovered", "Infected - smaller gamma"
        col = c(3,4,"#E69F00","#CC79A7"), inset = c(0.01, 0.01))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-96-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/smaller-gamma-1.png" style="display: block; margin: auto;" />
 
 As one expects, this causes the peak of infectious individuals to increase, while the variability of runs does not appreciably change.
 
@@ -451,7 +451,7 @@ legend('topleft', legend = c('Infected', "Recovered", "Infected - higher omega",
        col = c(3,4,"#E69F00","#CC79A7"), inset = c(0.05, 0.05))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-97-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/higher-omega-1.png" style="display: block; margin: auto;" />
 
 This causes the peak of recovered individuals to slightly decrease; however, the decrease in peak is not so substantial as to have this change outweigh the effect of stochasticity.
 
@@ -607,13 +607,13 @@ Let's take a look at the two sets of emulators stored in `stoch_emulators`, star
 plot_actives(stoch_emulators$variance)
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-23-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plot-actives-stoch-1.png" style="display: block; margin: auto;" />
 
 ``` r
 plot_actives(stoch_emulators$expectation)
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-23-2.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plot-actives-stoch-2.png" style="display: block; margin: auto;" />
 
 These plots show what variables are active, i.e. have the most explanatory power, for each of the mean and variance emulators. We see that $b$ and $\mu$ are inactive for almost all outputs in the variance emulators, even though they are active for some outputs in the mean emulators. Parameters $\beta_1$, $\epsilon$, $\alpha$ and $\gamma$ are active for most or all outputs in the mean emulators. 
 
@@ -630,7 +630,7 @@ emulator_plot(stoch_emulators$expectation$I100, params = c('epsilon', 'alpha'),
    geom_point(data = all_training[1,], aes(x = epsilon, y = alpha))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-116-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plot-stoch-ems-1.png" style="display: block; margin: auto;" />
 
 We see that the black point in the dark blue area, corresponding to the first point in `all_training`, does not have variance zero. This is because the mean emulator is trying to predict the 'true' mean at the point, but it has only been given a sample mean, which it cannot assume is equal to the 'true' mean. The emulator internally compensates for this incomplete information, resulting in the variance not being zero, even at points in the training set. This compensation also means that we can work with different numbers of replicates at different parameter sets. In general, for each training/validation parameter set, we should use as many repetitions as is feasible given the model complexity. More repetitions will provide a better estimate of the variance, which in turn allows to train more accurate mean emulators. If a model is relatively fast, then it is worth doing 50-100 repetitions per parameter set; if it is slower, then we can work with fewer repetitions (even just 5-10 per parameter set). This applies to different regions of the parameter space within a single model, too: if one part of the parameter space is much slower to run (e.g. parameter sets with higher beta values, which tend to produce more infections, slowing down agent-based models), then we could run fewer repetitions in those parts of parameter space.  </div></div>
  
@@ -663,14 +663,14 @@ emulator_plot(stoch_emulators, plot_type = 'nimp',
               targets = targets, params = c('epsilon', 'alpha'))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-25-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plot-stoch-nimp-1.png" style="display: block; margin: auto;" />
 
 <div class="panel panel-default"><div class="panel-heading"> Task </div><div class="panel-body"> 
 Use the argument `fixed_vals` to set the parameters that are not shown in the plot to be as in `chosen_params`. Verify that the implausibility at `chosen_params` is below 3. </div></div>
 
-<button id="displayTextunnamed-chunk-27" onclick="javascript:toggle('unnamed-chunk-27');">Show: Solution</button>
+<button id="displayTextunnamed-chunk-16" onclick="javascript:toggle('unnamed-chunk-16');">Show: Solution</button>
 
-<div id="toggleTextunnamed-chunk-27" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
+<div id="toggleTextunnamed-chunk-16" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
 We set `fixed_vals` to `chosen_params[!names(chosen_params) %in% c('epsilon', 'alpha')]`, plot the maximum implausibility and add a point corresponding to the values of $\sigma$ and $alpha$ in `chosen_params`:
 
 ``` r
@@ -686,7 +686,7 @@ emulator_plot(stoch_emulators, plot_type = 'nimp', targets = targets,
 ##   a single row.
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-123-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/imp-on-chosen-1.png" style="display: block; margin: auto;" />
 The plot shows what we expected: when $\epsilon$ and $\alpha$ are equal to their values in `chosen_params`, the implausibility measure is below the threshold $3$ (cf. black point in the box). </div></div></div>
 
 # Emulator diagnostics
@@ -695,9 +695,9 @@ A video presentation of this section can be found [here](https://youtu.be/UcWIzh
 
 The function `validation_diagnostics` can be used as in the deterministic case, to get three diagnostics for each emulated output. 
 
-<infobutton id="displayTextunnamed-chunk-28" onclick="javascript:toggle('unnamed-chunk-28');">Show: Remind me of what each diagnostic means</infobutton>
+<infobutton id="displayTextunnamed-chunk-17" onclick="javascript:toggle('unnamed-chunk-17');">Show: Remind me of what each diagnostic means</infobutton>
 
-<div id="toggleTextunnamed-chunk-28" style="display: none"><div class="panel panel-default"><div class="panel-body">
+<div id="toggleTextunnamed-chunk-17" style="display: none"><div class="panel panel-default"><div class="panel-body">
 **The first column** shows the emulator outputs plotted against the model outputs. In particular, the emulator expectation is plotted against the model output for each validation point, providing the dots in the graph. The emulator uncertainty at each validation point is shown in the form of a vertical interval that goes from $3\sigma$ below to $3\sigma$ above the emulator expectation, where $\sigma$ is the emulator variance at the considered point.  An 'ideal' emulator would exactly reproduce the model results: this behaviour is represented by the green line $f(x)=E[f(x)]$ (this is a diagonal line, visible here only in the bottom left and top right corners). Any parameter set whose emulator prediction lies more than $3\sigma$ away from the model output is highlighted in red. Note that we do not need to have no red points for the test to be passed: since we are plotting $3\sigma$ bounds, statistically speaking it is ok to have up to $5\%$ of validation points in red (see [Pukelsheim's $3\sigma$ rule](https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule)).
 
 **The second column** compares the emulator implausibility to the equivalent model implausibility (i.e. the implausibility calculated replacing the emulator output with the model output). There are three cases to consider:
@@ -720,7 +720,7 @@ We call `validation_diagnostics` passing it the mean emulators, the list of targ
 vd <- validation_diagnostics(stoch_emulators$expectation, targets, all_valid, plt=TRUE, row=2)
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-29-1.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-29-2.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-29-3.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-29-4.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/validation-diag-stoch-1.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/validation-diag-stoch-2.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/validation-diag-stoch-3.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/validation-diag-stoch-4.png" style="display: block; margin: auto;" />
 
 Note that by default `validation_diagnostics` groups the outputs in sets of three. Since here we have 8 outputs, we set the argument `row` to 2: this is not strictly necessary but improves the format of the grid of plots obtained. As in deterministic case, we can enlarge the $\sigma$ values of the mean emulators to obtain more conservative emulators, if needed. Based on the diagnostics above, all emulators perform quite well, so we won't modify any $\sigma$ values here. In order to access a specific mean emulator, you can type `ems$expectation$variable_name`. For example, to double the $\sigma$ of the mean emulator for $I25$, you would type `stoch_emulators$expectation$I25 <- stoch_emulators$expectation$I25$mult_sigma(2)`.
 
@@ -783,7 +783,7 @@ Here we generated $150$ points, since we are going to use $100$ of them to train
 plot_wrap(new_points, ranges)
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-33-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plot-new-points-1.png" style="display: block; margin: auto;" />
 
 Here we see which parameters are more or less constrained at the end of the first wave. For example, the penultimate column suggests that low values of $\gamma$ cannot produce a match. We can also deduce relationships between parameters: $\beta_1$ and $\epsilon$ are an example of negatively-correlated parameters. If $\beta_1$ is large then $\epsilon$ needs to be small, and vice versa. Other parameters, such as $\omega$ or $\mu$, are instead still spread out across their initial range.
 
@@ -839,7 +839,7 @@ As usual, before using the obtained emulators, we need to check their diagnostic
 vd <- validation_diagnostics(new_stoch_emulators, targets, new_all_valid, plt=TRUE, row=2)
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-37-1.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-37-2.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-37-3.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-37-4.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/validation-diag-stoch2-1.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/validation-diag-stoch2-2.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/validation-diag-stoch2-3.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/validation-diag-stoch2-4.png" style="display: block; margin: auto;" />
 
 Since these diagnostics look good, we can generate new non-implausible points. Here is the second caveat: we now need to pass both `new_stoch_emulators` and `stoch_emulators` to the `generate_new_design` function, since a point needs to be non-implausible for all emulators trained so far, and not just for emulators trained in the current wave:
 
@@ -881,7 +881,7 @@ wave_points(list(initial_points, new_points, new_new_points),
             ggplot2::theme(axis.text.x = ggplot2::element_text(size = 6))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-40-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/viz-wave-points-1.png" style="display: block; margin: auto;" />
 
 Here we can easily see that the spread of the second and third wave points are more narrow than those of the first wave. 
 
@@ -905,7 +905,7 @@ We are now ready to compare the performance of parameter sets at the end of each
 simulator_plot(all_aggregated, targets, barcol = "grey")
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-143-1.png" style="display: block; margin: auto;" /> </div></div>
+<img src="_main_files/figure-html/sim-plot-agg-1.png" style="display: block; margin: auto;" /> </div></div>
 
 Note that in this call we set `barcol="grey"` in order to have the target intervals in white, instead of black. This plot clearly shows that parameter sets at the end of the first and second wave perform better than the initial set of points. 
 
@@ -916,15 +916,15 @@ In the third visualisation, output values for non-implausible parameter sets at 
 wave_values(all_aggregated, targets, l_wid=1) 
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-42-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/viz-wave-values-1.png" style="display: block; margin: auto;" />
 
 The argument `l_wid` is optional and helps customise the width of the red lines that create the target boxes. The main diagonal shows the distribution of each output at the end of each wave, with the vertical red lines indicating the lower and upper bounds of the target. Above and below the main diagonal are plots for each pair of targets, with rectangles indicating the target area where full fitting points should lie (the ranges are normalised in the figures above the diagonals). These graphs can provide additional information on output distributions, such as correlations between them. For example, here we see positive correlations between $I25$ and $R40$.
 
 In this workshop we have shown how to perform the first three waves of the history matching process on a stochastic model. Of course, more waves are required, in order to complete the calibration task. 
 
-<infobutton id="displayTextunnamed-chunk-43" onclick="javascript:toggle('unnamed-chunk-43');">Show: Remind me of possible stopping criteria</infobutton>
+<infobutton id="displayTextunnamed-chunk-20" onclick="javascript:toggle('unnamed-chunk-20');">Show: Remind me of possible stopping criteria</infobutton>
 
-<div id="toggleTextunnamed-chunk-43" style="display: none"><div class="panel panel-default"><div class="panel-body">
+<div id="toggleTextunnamed-chunk-20" style="display: none"><div class="panel panel-default"><div class="panel-body">
 Since this is an iterative process, at the end of each wave we need to decide whether to perform a new wave or to stop. One possible stopping criterion consists of comparing the emulator uncertainty and the target uncertainty. If the former is larger, another wave can be performed, since new, more confident emulators can potentially help further reduce the non-implausible space. If the uncertainty of emulators is smaller than the uncertainty in the targets, improving the performance of emulators would not make a substantial difference, and additional waves would not be beneficial. We may also choose to stop the iterations when we get emulators that provide us with 'full-fitting' points at a sufficiently high rate. In such a case, rather than spending time training new emulators, we can generate new points with the function `generate_new_design` using the current emulators until we find enough full-fitting ones. Finally, we might end up with all the input space deemed implausible at the end of a wave. In this situation, we would deduce that there are no parameter sets that give an acceptable match with the data: in particular, this would raise doubts about the adequacy of the chosen model, or input and/or output ranges.</div></div></div>
 
 
@@ -945,43 +945,22 @@ legend('topleft', legend = c('Infected', "Recovered"), lty = 1,
        col = c(3,4), inset = c(0.05, 0.05))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-44-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/chosen-bimodal-1.png" style="display: block; margin: auto;" />
 
 The most common example of bimodality, ‘take off vs die out’, now enters the picture: from time $t=250$ on, there are a large number of trajectories in green that have zero infected individuals (note the horizontal green line) and a few trajectories where transmission takes off again, producing a second wave of the epidemic (around $t=300$). 
 
 <div class="panel panel-default"><div class="panel-heading"> Task </div><div class="panel-body"> 
 Investigate how different parameter sets give rise to different levels of bimodality. 
 
-<infobutton id="displayTextunnamed-chunk-151" onclick="javascript:toggle('unnamed-chunk-151');">Show: R tip</infobutton>
+<infobutton id="displayTextunnamed-chunk-111" onclick="javascript:toggle('unnamed-chunk-111');">Show: R tip</infobutton>
 
-<div id="toggleTextunnamed-chunk-151" style="display: none"><div class="panel panel-default"><div class="panel-body">
-
-Copy the code below, modify the value of (some) parameters and run it.
-
-``` r
-example_params <- c(
-  b = 1/(76*365),  # birth rate
-  mu = 1/(76*365),  # rate of death from other causes
-  beta1 = 0.214, beta2 = 0.107, beta3 = 0.428,  # infection rate between each infectious and susceptible individual
-  epsilon = 1/7,  # rate of becoming infectious after infection
-  alpha = 1/50,  # rate of death from the disease
-  gamma = 1/14,  # recovery rate
-  omega = 1/365  # rate at which immunity is lost following recovery
-)
-solution <- get_results(example_params, outs = c("I", "R"), 
-                        times = c(25, 40, 100, 200), raw = TRUE)
-plot(0:200, ylim=c(0,700), ty="n", xlab = "Time", ylab = "Number")
-for(j in 3:4) for(i in 1:100) lines(0:200, solution[,j,i], col=(3:4)[j-2], lwd=0.3)
-legend('topleft', legend = c('Infected', "Recovered"), lty = 1, 
-       col = c(3,4), inset = c(0.05, 0.05))
-```
-</div></div></div>
+<div id="toggleTextunnamed-chunk-111" style="display: none"><div class="panel panel-default"><div class="panel-body"></div></div></div>
  </div></div>
 
 
-<button id="displayTextunnamed-chunk-46" onclick="javascript:toggle('unnamed-chunk-46');">Show: Solution</button>
+<button id="displayTextunnamed-chunk-22" onclick="javascript:toggle('unnamed-chunk-22');">Show: Solution</button>
 
-<div id="toggleTextunnamed-chunk-46" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
+<div id="toggleTextunnamed-chunk-22" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
 Let us see what happens when we simulate a higher rate of infection between each infectious and susceptible:
 
 ``` r
@@ -1005,7 +984,7 @@ legend('topleft', legend = c('Infected', "Recovered", "Infected - higher beta",
        col = c(3,4,"#E69F00","#CC79A7"), inset = c(0.01, 0.01))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-158-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/bimod-higher-beta-1.png" style="display: block; margin: auto;" />
 
 We see that the peaks of recovered and infectious individuals during the first wave have now increased, as expected. Also note how increasing the transmission rate reduced the role of bimodality (very few trajectories in orange take off after the first wave): the fact that more individuals get now infected during the first wave (around $t=50$), makes the chances of a second "wave" around time $t=300$ lower. </div></div></div>
 
@@ -1040,28 +1019,16 @@ bimodal_targets <- list(
 
 Note that these are the same exact targets chosen for the deterministic workshop, [Workshop 1](https://andy-iskauskas.github.io/determ_workshop/index.html).
 
-Since we are now interested in times after $t=200$ too, we need to rerun the parameter sets in `initial_points`, obtaining `bimodal_initial_results`. We then bind all elements in `bimodal_initial_results` to obtain a dataframe `bimodal_wave0`, which we split into a training and a validation set:
-
+In principle, we now need to run the parameter sets in `initial_points` to include times larger than $t=200$, to obtain our training data. Due to the comparative slowness of the model, in particular since we need to run multiple repetitions at each parameter combination, we have pre-run this to obtain `bimodal_wave0`, a data.frame consisting of $7500$ realisations: $50$ per point for each of the $150$ points in our initial ensemble. To obtain a similar data.frame, one could use the code in Section 4 but modifying the `times` argument to be the numeric vector `c(25, 40, 100, 200, 250, 400, 500)`.
 
 
 ``` r
-bimodal_initial_results <- list()
-with_progress({
-  p <- progressor(nrow(initial_points))
-for (i in 1:nrow(initial_points)) {
-  model_out <- get_results(unlist(initial_points[i,]), nreps = 50, outs = c("I", "R"), 
-                           times = c(25, 40, 100, 200, 250, 400, 500))
-  bimodal_initial_results[[i]] <- model_out
-  p(message = sprintf("Run %g", i))
-}
-})
-bimodal_wave0 <- data.frame(do.call('rbind', bimodal_initial_results))
+bimodal_wave0 <- read.csv(url("https://maths.dur.ac.uk/users/andrew.iskauskas/Resources/bimodal_data.csv"))
 bimodal_all_training <- bimodal_wave0[1:5000,]
 bimodal_all_valid <- bimodal_wave0[5001:7500,]
-bimodal_output_names <- c("I25", "I40", "I100", "I200", "I250", "I400", "I500", 
+bimodal_output_names <- c("I25", "I40", "I100", "I200", "I250", "I400", "I500",
                           "R25", "R40", "R100", "R200", "R250", "R400", "R500")
 ```
-
 
 ## Bimodal Emulators
 
@@ -1087,48 +1054,38 @@ Behind the scenes, this function does the following:
 Let us now plot the expectation of the mean emulator of $R400$ for each mode fixing all non-shown parameters to their values in `chosen_params`: 
 
 ``` r
-emulator_plot(bimodal_emulators$mode1$expectation$R400, params = c('mu', 'alpha'), 
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('mu', 'alpha')])
+emulator_plot(bimodal_emulators$mode1$expectation$R400, params = c('alpha', 'epsilon'), 
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha', 'epsilon')])
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-167-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plot-bimod-output-1.png" style="display: block; margin: auto;" />
 
 ``` r
-emulator_plot(bimodal_emulators$mode2$expectation$R400, params = c('mu', 'alpha'), 
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('mu', 'alpha')])
+emulator_plot(bimodal_emulators$mode2$expectation$R400, params = c('alpha', 'epsilon'), 
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha', 'epsilon')])
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-167-2.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plot-bimod-output-2.png" style="display: block; margin: auto;" />
 
-We notice that mode 2 tends to contain higher values than mode 1. This indicates that mode 1 is the one where the infection dies out.
+We notice that, while mode 1 is more variable, mode 2 tends to contain higher values than mode 1. This indicates that mode 1 is the one where the infection is liable to die out.
 
 It is also instructive to plot the expectation of the proportion emulator. We use the argument `fixed_vals` to set the parameters that are not shown in the plot to be as in `chosen_params`:
   
 
 ``` r
-emulator_plot(bimodal_emulators$prop, params = c('alpha', 'epsilon'), 
-              fixed_vals = chosen_params[!names(chosen_params) %in% c('alpha' ,'epsilon')]) +
-              geom_point(aes(x=1/7, y=1/50), size=3)
+emulator_plot(bimodal_emulators$prop, params = c('beta1', 'mu'), 
+              fixed_vals = chosen_params[!names(chosen_params) %in% c('beta1' ,'mu')]) +
+              geom_point(data = data.frame(beta1 = 0.214, mu = 1/27740), aes(x=mu, y=beta1), size=3)
 ```
 
-```
-## Warning in geom_point(aes(x = 1/7, y = 1/50), size = 3): All aesthetics have length 1, but the data has 900 rows.
-## ℹ Please consider using `annotate()` or provide this layer with data containing
-##   a single row.
-```
+<img src="_main_files/figure-html/plot-bimod-prop-1.png" style="display: block; margin: auto;" />
 
-```
-## Warning in labels(...): NAs introduced by coercion
-```
-
-<img src="_main_files/figure-html/unnamed-chunk-168-1.png" style="display: block; margin: auto;" />
-
-The plot shows that the proportion of points in mode 1, where the infection dies out, is around 0.58. This is in accordance with the plot produced at the beginning of this section, where the infection died out on the majority of trajectories. </div></div>
+The plot shows that the proportion of points in mode 1, where the infection dies out, is around 0.55. This is in accordance with the plot produced at the beginning of this section, where the infection died out on a slim majority of trajectories. </div></div>
 
 
-<infobutton id="displayTextunnamed-chunk-51" onclick="javascript:toggle('unnamed-chunk-51');">Show: How are bimodal outputs identified?</infobutton>
+<infobutton id="displayTextunnamed-chunk-25" onclick="javascript:toggle('unnamed-chunk-25');">Show: How are bimodal outputs identified?</infobutton>
 
-<div id="toggleTextunnamed-chunk-51" style="display: none"><div class="panel panel-default"><div class="panel-body">
+<div id="toggleTextunnamed-chunk-25" style="display: none"><div class="panel panel-default"><div class="panel-body">
 Suppose we are given a dataframe containing parameter sets (with repetitions) and the corresponding outputs. An individual row of that dataframe would be of the form  $(x, y) = (x_1, x_2, x_3, …, x_p, y_1, y_2, … y_n)$ where $x$ are the paramters and $y$ the outputs. To check and classify bimodality we follow the steps below:
   
 1. We split the dataframe into unique parameter sets, collecting repetitions for each parameter set together. For each unique parameter set $\bar{x}$ and each $i=1,...,n$, we use clustering on $y_i$ (with finite normal [mixture models](https://en.wikipedia.org/wiki/Mixture_model)), allowing a maximum of two clusters. If the optimal clustering has two clusters, we consider the output $y_i$ to be bimodal at $\bar{x}$; otherwise we consider it unimodal.
@@ -1151,27 +1108,27 @@ The process described above is schematically represented in the figure below:
 
 
 <div class="panel panel-default"><div class="panel-heading"> Task </div><div class="panel-body"> 
-Confirm that mode 1 is where the infection dies out by comparing the plots of the expectation of the mean emulator for $I400$ for both modes. </div></div>
+Confirm that mode 1 is where the infection dies out by comparing the predictions of the mean emulators for each mode. </div></div>
 
 
-<button id="displayTextunnamed-chunk-53" onclick="javascript:toggle('unnamed-chunk-53');">Show: Solution</button>
+<button id="displayTextunnamed-chunk-27" onclick="javascript:toggle('unnamed-chunk-27');">Show: Solution</button>
 
-<div id="toggleTextunnamed-chunk-53" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
-We use `emulator_plot` to produce the suggested plots:
-
-``` r
-emulator_plot(bimodal_emulators$mode1$expectation$I400, params = c('mu', 'alpha'))
-```
-
-<img src="_main_files/figure-html/unnamed-chunk-180-1.png" style="display: block; margin: auto;" />
+<div id="toggleTextunnamed-chunk-27" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
+We could use `emulator_plot` to perform this, looking at different slices, but it may be more instructive to consider the emulator predictions across all emulated outputs. We use the `chosen_params` as a data.frame and predict on both modes, combining the predictions using some base R plotting.
 
 ``` r
-emulator_plot(bimodal_emulators$mode2$expectation$I400, params = c('mu', 'alpha'))
+chosen_data_frame <- data.frame(t(chosen_params))
+mode1_preds <- purrr::map_dbl(bimodal_emulators$mode1$expectation, ~.$get_exp(chosen_data_frame))
+mode2_preds <- purrr::map_dbl(bimodal_emulators$mode2$expectation, ~.$get_exp(chosen_data_frame))
+plot(mode1_preds, type = 'l', xaxt = "n", xlab = "Output", ylab = "Number")
+axis(1, at = seq_len(length(bimodal_output_names)), labels = bimodal_output_names)
+lines(mode2_preds, col = "blue")
+legend('topleft', inset = 0.05, legend = c("Mode 1", "Mode 2"), lty = 1, col = c('black', 'blue'))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-180-2.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/plot-modes-1.png" style="display: block; margin: auto;" />
 
-The values in the plot for mode 1 are lower than those for mode 2: this reflects the fact that mode 2 experiences a second wave around $t=300$, while in mode 1 the infection dies out after the first wave (around $t=40$). </div></div></div>
+The difference in numbers of infected is small, but appreciable; that of the recovered compartments clearly show the second peak of the disease in the second mode.</div></div></div>
 
 ## Implausibility 
 
@@ -1186,65 +1143,63 @@ emulator_plot(bimodal_emulators, plot_type = 'nimp', targets = bimodal_targets,
               params = c('alpha', 'epsilon'))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-184-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/bimod-implaus-1.png" style="display: block; margin: auto;" />
  </div></div>
 
 <div class="panel panel-default"><div class="panel-heading"> Task </div><div class="panel-body"> 
 Set the argument `plot_type` to `imp` to produce implausibility plots for each output, for mode 1 and mode 2. Which implausibility plots are the same for each mode, and which are different? Why? </div></div>
 
-<button id="displayTextunnamed-chunk-56" onclick="javascript:toggle('unnamed-chunk-56');">Show: Solution</button>
+<button id="displayTextunnamed-chunk-30" onclick="javascript:toggle('unnamed-chunk-30');">Show: Solution</button>
 
-<div id="toggleTextunnamed-chunk-56" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
-Setting `plot_type='imp'` in `emulator_plot` and passing it either `subset_emulators(bimodal_emulators, output_names[-c(7,14)])$mode1` or `subset_emulators(bimodal_emulators, output_names[-c(7,14)])$mode2`, we get:
+<div id="toggleTextunnamed-chunk-30" style="display: none"><div class="panel panel-default"><div class="panel-heading panel-heading1"> Solution </div><div class="panel-body">
+Setting `plot_type='imp'` in `emulator_plot`, we obtain a collection of plots:
 
 ``` r
 emulator_plot(bimodal_emulators$mode1, plot_type = 'imp', 
               targets = bimodal_targets, params = c('omega', 'epsilon'))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-190-1.png" style="display: block; margin: auto;" />
+<img src="_main_files/figure-html/bimod-imp-compare-1.png" style="display: block; margin: auto;" />
 
 ``` r
 emulator_plot(bimodal_emulators$mode2, plot_type = 'imp', 
               targets = bimodal_targets, params = c('omega', 'epsilon'))
 ```
 
-<img src="_main_files/figure-html/unnamed-chunk-190-2.png" style="display: block; margin: auto;" />
-The implausibility plots are the same between modes for early times ($t=25,40,100$) and different between modes for later outputs. This makes sense, since bimodality, which enters the picture after the first wave, does not play a role in earlier times. </div></div></div>
+<img src="_main_files/figure-html/bimod-imp-compare-2.png" style="display: block; margin: auto;" />
+The implausibility plots are broadly the same between modes for early times ($t=25,40,100$) and different between modes for later outputs. This makes sense, since bimodality, which enters the picture after the first wave, should not play a significant role in earlier times. </div></div></div>
 
 
 ## Emulator diagnostics
 
-As before, the function `validation_diagnostics` can be used to get three diagnostics for each emulated output. For example, to produce diagnostics for the first four emulators we type:
+As before, the function `validation_diagnostics` can be used to get three diagnostics for each emulated output. For example, to produce diagnostics for the first four emulators of the number of recovered individuals we type:
 
 
 ``` r
-vd <- validation_diagnostics(bimodal_emulators, bimodal_targets, bimodal_all_valid, 
+validation_subset <- subset_emulators(bimodal_emulators, c("R25", "R40", "R100", "R200"))
+vd <- validation_diagnostics(validation_subset, bimodal_targets, bimodal_all_valid, 
                              plt=TRUE, row=2)
 ```
 
-```
-## Warning in fanny(suppressWarnings(daisy(v_outputs)), k = 2): the memberships
-## are all very close to 1/k. Maybe decrease 'memb.exp' ?
-```
+<img src="_main_files/figure-html/bimod-validation-1.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/bimod-validation-2.png" style="display: block; margin: auto;" />
 
-<img src="_main_files/figure-html/unnamed-chunk-57-1.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-57-2.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-57-3.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-57-4.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-57-5.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-57-6.png" style="display: block; margin: auto;" /><img src="_main_files/figure-html/unnamed-chunk-57-7.png" style="display: block; margin: auto;" />
+Note that, in order to restrict to a subset of the emulated outputs, we use the `subset_emulators` function. This ensures that the requisite outputs are selected while maintaining the structure of the emulator lists (i.e. we still have modes 1 and 2, expectation, variance, etc).
 
 <div class="panel panel-default"><div class="panel-body"> 
 
 You may have noticed that in the first column we have more points plotted than we have validation points. This is because we do diagnostics for each mode for each output, i.e. we compare the predictions of the mean emulators for mode 1 and mode 2 with the model output values, which are also clustered in two subsets, due to bimodality. </div></div>
 
-As in the deterministic case, one can enlarge the $\sigma$ values to obtain more conservative emulators, if needed. For example,  to double the $\sigma$ value for the mean emulators for $I500$ in both modes we would type:
+As in the deterministic case, one can enlarge the $\sigma$ values to obtain more conservative emulators, if needed. For example,  to increase the $\sigma$ value slightly for the mean emulators for $R200$ in both modes we would type:
 
 
 ``` r
-bimodal_emulators$mode1$expectation$I500 <- bimodal_emulators$mode1$expectation$I500$mult_sigma(2)
-bimodal_emulators$mode2$expectation$I500 <- bimodal_emulators$mode2$expectation$I500$mult_sigma(2)
+bimodal_emulators$mode1$expectation$R200 <- bimodal_emulators$mode1$expectation$R200$mult_sigma(1.2)
+bimodal_emulators$mode2$expectation$R200 <- bimodal_emulators$mode2$expectation$R200$mult_sigma(1.2)
 ```
 
 ## Proposing new points
 
-Generating a set of non-implausible points, based on the trained emulators, is done in exactly the same way as it was in Section \@ref(propnewpoints), using the function `generate_new_design`. In this case we need to use the function `subset_emulators` to remove the emulators for the outputs at $t=450$ (the seventh and fourteenth emulators), for which we did not set targets: 
+Generating a set of non-implausible points, based on the trained emulators, is done in exactly the same way as it was in Section \@ref(propnewpoints), using the function `generate_new_design`.
 
 
 ``` r
